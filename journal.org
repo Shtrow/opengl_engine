@@ -1,0 +1,6 @@
+* <24/10/2019>
+** Projet jeu video en ocaml
+**
+** A faire:
+** 1) Ficher les jalons (plus GANTT chart)
+** 2) Un prototype
