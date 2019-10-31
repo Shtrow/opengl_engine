@@ -1,0 +1,44 @@
+diagramme à ouvrire avec -> https://www.draw.io/
+
+
+//takeAction de player
+void takeAction(){
+	if(Key.pressed == 'up'){
+		val action = find("MoveAction");
+		action.perform(); 
+		//Si c'est le joueur qui fait l'action, on décrémente le cooldown des ennemie,
+	}
+}
+
+//takeAction de enemy
+void takeAction(){
+	val ia = GetComponent("IA_Component");
+	//C'est l'ia qui décide de la prochaine action
+}
+
+
+//la boucle de jeu est dans la scene
+void animationLoop(){
+	foreach e in entities{
+		e.getComponent<Animation>().update();
+	}
+}
+void colisionLoop(){
+	foreach e in entities{
+		e.getComponent<HitBox>().update();
+	}
+}
+
+void actionLoop(){
+	foreach a in actors{
+		if(a.isReady()){ //isReady est vrai si le cooldown est a zero
+			a.takeAction();
+		}
+	}
+}
+void gameUpdate(){
+	animationLoop();
+	colisionLoop();
+	actionLoop();
+	...
+}
