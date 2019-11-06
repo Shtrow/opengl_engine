@@ -1,30 +1,28 @@
 
-
-type entity;;
-class type component  = 
+class  type ['component]  entity  = 
   object
-    val mutable entity : entity ref
+    val mutable components : 'component list
+    method get_components : 'component list
   end
-class type entity  = 
+class type virtual component  = 
   object
-    val mutable components : component list
-
-    method update : unit -> unit
+    val mutable _entity : component entity ref
+    method virtual update : unit 
   end
 
-class type action = 
+class type virtual action = 
   object 
-    method perform : unit -> unit
+    method virtual perform : unit
   end 
 
 
-class type actor = 
+class type virtual actor = 
   object
-    inherit entity
+    inherit [component] entity
     val mutable cooldown : int
     val mutable actions : action list
     val mutable is_ready : bool
-    method take_action : unit -> unit 
+    method virtual take_action : unit
   end
 type rectangle = {height : int ; width : int}
 type position = {x : int ; y : int}
@@ -36,13 +34,14 @@ class type collision_box =
     val box : rectangle
   end
 
-class type transform = 
+class type transform  = 
   object 
     inherit component
+    method update : unit
   end
 
 class type scene = 
   object
-    val mutable entities : entity list
-    method gameUpdate : unit -> unit
+    val mutable entities : (component entity) list
+    method gameUpdate : unit
   end
