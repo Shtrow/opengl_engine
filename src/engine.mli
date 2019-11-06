@@ -12,6 +12,7 @@ and virtual component  : entity ref ->
   object
     val mutable _entity : entity ref
     method get_entity_ref : entity ref
+    method init : unit 
     method update : unit 
   end
 
@@ -43,5 +44,5 @@ class transform  : entity ref ->
 class scene : entity list ->
   object
     val mutable entities : entity list
-    method gameUpdate : unit
+    method sceneUpdate : unit
   end

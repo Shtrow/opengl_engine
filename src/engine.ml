@@ -14,6 +14,7 @@ and virtual component (entity :  entity ref)=
   object(self)
     val mutable _entity : entity ref = entity 
     method get_entity_ref = _entity
+    method init : unit = ()
     method update : unit = ()
   end
 
@@ -42,11 +43,14 @@ class transform (entity : entity ref)=
     method update = ()
   end
 
+let iter_on_component_update = List.iter (fun c ->c#update) 
+let iter_on_component_init = List.iter (fun c ->c#init) 
 class scene (entities : entity list)  = 
   object(self)
     val mutable entities  = entities
-    method gameUpdate = 
-    let iter_on_component = 
-      List.iter (fun c ->c#update) in
-    List.iter ( fun e -> iter_on_component !(e#get_components)) entities
+    (** TODO : optimiser gameUpdate *)
+    method sceneUpdate = 
+    List.iter ( fun e -> iter_on_component_update !(e#get_components)) entities
+    initializer (List.iter ( fun e -> iter_on_component_init !(e#get_components)) entities
+)
   end
