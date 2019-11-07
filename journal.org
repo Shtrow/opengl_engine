@@ -4,3 +4,8 @@
 ** A faire:
 ** 1) Ficher les jalons (plus GANTT chart)
 ** 2) Un prototype
+
+* <07/11/2019>
+** Fait : Jalons, boucle de jeu simple
+** À faire : prototype graphique simple
+  + makefile
