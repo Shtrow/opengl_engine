@@ -8,18 +8,23 @@ class entity  (components : component list)=
     method add_component c = 
       components <- c::components
     method get_components = ref components
+    method get_component tag = ref (List.find (fun c -> String.equal c#get_tag tag) components)
   end
 
-and virtual component (entity :  entity ref)= 
+and virtual component (entity :  entity ref) (tag : string)= 
   object(self)
     val mutable _entity : entity ref = entity 
+    val mutable tag : string = tag 
     method get_entity_ref = _entity
+    method get_tag = tag
     method init : unit = ()
     method update : unit = ()
   end
 
-class virtual action = 
+class virtual action (tag : string) = 
   object(self)
+    val mutable tag : string = tag 
+    method get_tag : string = tag
     method virtual perform : unit 
   end
 
@@ -29,6 +34,7 @@ class virtual actor (components : component list) (cd : int) (acts : action list
     val mutable cooldown = cd
     val mutable actions =acts
     val mutable is_ready  = false
+    method get_action (tag : string) = ref (List.find (fun c -> String.equal c#get_tag tag) actions)
     method virtual take_action : unit  
   end
 
@@ -39,7 +45,7 @@ class collision_box (box : rectangle)=
 
 class transform (entity : entity ref)= 
   object(self)
-    inherit component entity
+    inherit component entity "transform"
     method update = ()
   end
 

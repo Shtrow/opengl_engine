@@ -7,17 +7,22 @@ class entity  : component list ->
     val mutable components : component list
     method add_component : component -> unit
     method get_components : (component list) ref
+    method get_component : string -> component ref
   end
-and virtual component  : entity ref ->
+and virtual component  : entity ref -> string ->
   object
     val mutable _entity : entity ref
+    val mutable tag : string
     method get_entity_ref : entity ref
+    method get_tag : string
     method init : unit 
     method update : unit 
   end
 
-class virtual action : 
+class virtual action : string ->
   object 
+    val tag : string
+    method get_tag : string 
     method virtual perform : unit
   end 
 
@@ -27,6 +32,7 @@ class virtual actor : component list -> int -> action list ->
     val mutable cooldown : int
     val mutable actions : action list
     val mutable is_ready : bool
+    method get_action : string -> action ref
     method virtual take_action : unit
   end 
 
