@@ -8,7 +8,7 @@ let debug_entity =
 
 let a_component = 
   object(self)
-  inherit component  (ref debug_entity)
+  inherit component  (ref debug_entity) "a_component"
   method init = print_string "initialisation"
   method update  = print_string "I'm alive"; print_newline ();
   end;;
