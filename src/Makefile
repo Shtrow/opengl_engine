@@ -12,6 +12,7 @@ all:
 	$(CAMLC) -o $(EXEC) $(FLAGS) engine.cmo prototype.ml
 
 clean:
+	echo "Suppression du makefile"
 	rm -f *.cm[io] *~ .*~ #*#
 	rm -f $(EXEC)
 
