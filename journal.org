@@ -9,3 +9,10 @@
 ** Fait : Jalons, boucle de jeu simple
 ** À faire : prototype graphique simple
   + makefile
+  
+* <18/11/2019>
+** Potentiel moyen d'utiliser GLUT et GL
+** sudo aptitude update
+** sudo aptitude install liblablgl-ocaml-dev ocaml-findlib
+** ocamfind opt graphics_test.ml -package lablgl.glut -linkpkg -o graphics_test
+** Il a du mal à retrouver la l'emplacement de GL et GLUT
