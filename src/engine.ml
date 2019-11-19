@@ -1,34 +1,56 @@
-type rectangle = {height : int ; width : int}
-type vector2 = {x : int ; y : int}
-type scale = {factor_height : int ; factor_width : int}
-type direction = Left|Right|Up|Down;;
-type cell = int*int
 let dt_ref = ref 0.;;
 let dt () = !dt_ref;;
 let framerate = 1./.60.;;
 let frame_counter = ref 0;
+
+
+type rectangle = {height : int ; width : int}
+type vector2 = {x : int ; y : int}
+type scale = {factor_height : int ; factor_width : int}
+type direction = Left|Right|Up|Down
+type cell = int*int
+type component_extension_type = ..
+type component_extension_type += Dummy
+
+class transform_values =
+object
+  val position = {x =0; y = 0}
+  val scale = {factor_height = 1 ; factor_width = 1}
+  method get_position = position
+  method get_scale = scale
+end
+type component_extension_type += Trasform of transform_values;;
+
 
 class entity  (components : component list)= 
   object(self)
     val mutable components : component list = components
     method add_component c = 
       components <- c::components
-    method get_components = ref components
-    (* TODO : changer getComponent pour qu'il revoie le type le plus bas (gérer ça avec du polymorphisme)  *)
-    method get_component tag = ref (List.find (fun c -> String.equal c#get_tag tag) components)
+    method get_components = components
+    method get_component tag =  (List.find (fun c -> String.equal c#get_tag tag) components)
+    initializer self#add_component (new transform (self:>entity))
   end
 
-and virtual component (entity :  entity ref) (tag : string) = 
+and virtual component  ?component_extension (entity :  entity) (tag : string) = 
   object(self)
-    val mutable _entity : entity ref = entity 
+    val mutable _entity : entity = entity
     val mutable tag : string = tag
-    method get_entity_ref = _entity
+    val mutable c_e : component_extension_type = if Option.is_some component_extension then Option.get component_extension else Dummy
+    method get_component_extension = c_e
+    method get_entity = _entity
     method get_tag = tag
     method init : unit = ()
     method update : unit = ()
   end
 
-class virtual action (tag : string) (actor: actor ref) = 
+and transform (entity : entity )= 
+  object(self)
+    inherit  component entity "transform" ~component_extension:(Trasform new transform_values )
+    (* ici, update ne sert à rien *)
+  end
+
+class virtual action (tag : string) (actor: actor ) = 
   object(self)
     val mutable tag : string = tag 
     val actor = actor
@@ -50,7 +72,7 @@ and virtual actor (components : component list) (cd : int) (acts : action list)=
     method get_board_position = board_position
     method set_board_position p = board_position <- p
     method add_action a = actions <- a::actions
-    method get_action (tag : string) = ref (List.find (fun c -> String.equal c#get_tag tag) actions)
+    method get_action (tag : string) =  (List.find (fun c -> String.equal c#get_tag tag) actions)
     method virtual take_action : unit  
   end
 
@@ -59,11 +81,6 @@ class collision_box (box : rectangle)=
     val mutable box : rectangle = box
   end
 
-class transform (entity : entity ref)= 
-  object(self)
-    inherit component entity "transform" 
-    val position = {x =0; y = 0}
-  end
 
 let iter_on_component_update = List.iter (fun c ->c#update) 
 let iter_on_component_init = List.iter (fun c ->c#init) 
@@ -74,8 +91,8 @@ class scene (entities : entity list) (name:string) =
     method get_name = _name
     (** TODO : optimiser gameUpdate *)
     method scene_update = 
-    List.iter ( fun e -> iter_on_component_update !(e#get_components)) entities
-    initializer (List.iter ( fun e -> iter_on_component_init !(e#get_components)) entities
+    List.iter ( fun e -> iter_on_component_update (e#get_components)) entities
+    initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities
     )
     method add_entity entity = entities <- entity::entities
   end

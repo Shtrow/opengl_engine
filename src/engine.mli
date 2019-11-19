@@ -3,32 +3,38 @@ type vector2 = {x : int ; y : int}
 type scale = {factor_height : int ; factor_width : int}
 type direction = Left|Right|Up|Down;;
 type cell = int*int
+
+(* Si un component a besoin d'implémenté un accesseur  *)
+type component_extension_type = ..
+type component_extension_type += Dummy
 val dt : unit -> float
 
 class entity  : component list ->
   object
     val mutable components : component list
     method add_component : component -> unit
-    method get_components : (component list) ref
-    method get_component : string -> component ref
+    method get_components : component list
+    method get_component : string -> component
   end
-and virtual component  : entity ref -> string ->
+and virtual component  : ?component_extension:component_extension_type -> entity -> string ->
   object
-    val mutable _entity : entity ref
+    val mutable _entity : entity
     val mutable tag : string
-    method get_entity_ref : entity ref
+    val mutable c_e : component_extension_type
+    method get_component_extension :component_extension_type
+    method get_entity : entity
     method get_tag : string
     method init : unit 
-    method update : unit 
+    method update : unit
   end
 
-class virtual action : string -> actor ref ->
+class virtual action : string -> actor ->
   object 
     val tag : string
-    val actor : actor ref
+    val actor : actor
     method get_tag : string 
     method virtual perform : unit
-    method get_actor : actor ref
+    method get_actor : actor
   end 
 
 and virtual actor : component list -> int -> action list ->
@@ -44,7 +50,7 @@ and virtual actor : component list -> int -> action list ->
     method get_board_position : cell
     method set_board_position : cell -> unit
     method add_action : action -> unit
-    method get_action : string -> action ref
+    method get_action : string -> action
     method virtual take_action : unit
   end 
 
@@ -53,11 +59,9 @@ class collision_box :  rectangle ->
     val box : rectangle
   end
 
-class transform  : entity ref ->
+class transform  : entity ->
   object 
     inherit component
-    val position : vector2
-    method update : unit
   end
 
 class scene : entity list -> string ->
