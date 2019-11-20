@@ -4,12 +4,13 @@
 EXEC = game
 # Le compilateur 
 CAMLC= ocamlc
-FLAGS= -g
+# Les mli
+ILM = *.mli
+# Les ml
+LM = *.ml
 
 all:
-	$(CAMLC) engine.mli
-	$(CAMLC) engine.ml
-	$(CAMLC) -o $(EXEC) $(FLAGS) engine.cmo prototype.ml
+	$(CAMLC) -o $(EXEC) $(ILM) $(LM)
 
 clean:
 	echo "Suppression du makefile"

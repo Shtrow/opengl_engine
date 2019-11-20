@@ -5,7 +5,21 @@
 ** 1) Ficher les jalons (plus GANTT chart)
 ** 2) Un prototype
 
+
+
 * <07/11/2019>
 ** Fait : Jalons, boucle de jeu simple
 ** À faire : prototype graphique simple
   + makefile
+
+
+* <14/11/2019>
+** Fait:
+** Essayé bind entre OpenGL et ocaml, 2 problèmes, 
+** mais une façon de faire marcher les choses a été trouvée
+** à faire:
+** Tester bind de SDL avec ocaml 
+** Installer OpenGL avec ce qu'il faut pour ocaml dans un ordinateur
+** personel
+** Mettre à jour diagramme de gantt
+** Commencer à travailler à la boucle du jeu 
