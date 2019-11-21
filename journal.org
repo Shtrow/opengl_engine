@@ -23,3 +23,15 @@
 ** personel
 ** Mettre à jour diagramme de gantt
 ** Commencer à travailler à la boucle du jeu 
+
+* <21/11/2019>
+
+** Fait
+   Bind avec openGL
+   Boucle de jeu: début, gestion des projets
+
+** TODO
+   Afficher des objets, des textures, 
+   Peut être les animer
+   Implémenter le rendu et l'animation de chaque objet avec open GL
+  
