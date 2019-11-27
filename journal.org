@@ -9,3 +9,9 @@
 ** Fait : Jalons, boucle de jeu simple
 ** À faire : prototype graphique simple
   + makefile
+
+* <27/11/2019>
+** Conclusion : La piste Marshal est non viable
+** Pourquoi?
+*** Ocaml est incapable de reconstruire la classe ou l'objet après l'avoir déconstruit
+*** Cela a pour conséquence Seg fault
