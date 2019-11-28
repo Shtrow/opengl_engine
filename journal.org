@@ -15,14 +15,14 @@
 
 * <14/11/2019>
 ** Fait:
-** Essayé bind entre OpenGL et ocaml, 2 problèmes, 
+** Essayé bind entre OpenGL et ocaml, 2 problèmes,
 ** mais une façon de faire marcher les choses a été trouvée
 ** à faire:
-** Tester bind de SDL avec ocaml 
+** Tester bind de SDL avec ocaml
 ** Installer OpenGL avec ce qu'il faut pour ocaml dans un ordinateur
 ** personel
 ** Mettre à jour diagramme de gantt
-** Commencer à travailler à la boucle du jeu 
+** Commencer à travailler à la boucle du jeu
 
 * <21/11/2019>
 
@@ -31,7 +31,18 @@
    Boucle de jeu: début, gestion des projets
 
 ** TODO
-   Afficher des objets, des textures, 
+   Afficher des objets, des textures,
    Peut être les animer
    Implémenter le rendu et l'animation de chaque objet avec open GL
-  
+
+* <28/11/2019>
+** Fait:
+  - apprentissage OpenGL
+  - encodage de classes en byes (!)
+      -> utliser les 1st-class modules à la place
+      -> Yann-Régis a suggéré d'utiliser des GADT
+
+** À faire :
+  - afficher des objets
+  - trouver une solution  avec des GADTs/first-class modules/marshalling ?
+
