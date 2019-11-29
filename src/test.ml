@@ -1,4 +1,3 @@
-
 (* Création d'une classe virtuelle mère*)
 class virtual ['a] a_class = 
 object
@@ -24,7 +23,7 @@ method h = print_string "supplementary method"
 method f = print_string "Third method"
 end;;
 
-(*Deux nouvelle instances*)
+(*Deux nouvelles instances*)
 let b = (new b_class:> _ a_class);;
 let c = (new c_class:> _ a_class);;
 
