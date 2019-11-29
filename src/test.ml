@@ -1,33 +1,37 @@
-open Engine
 
+(* Création d'une classe virtuelle mère*)
+class virtual ['a] a_class = 
+object
+method virtual soi : 'a
+end;;
 
-let debug_entity = 
-  object(self)
-    inherit entity []
-  end
+(* une classe b qui hérite de l'interface a*)
+class ['a] b_class = 
+object (self)
+inherit ['a] a_class
+method soi = `ClassB self (* pointeur vers l'objet*)
+method g = 2
+method h =  print_string "supplementary method"
+end;;
 
-let a_component = 
-  object(self)
-  inherit component  (ref debug_entity) "a_component"
-  method init = print_string "initialisation"
-  method update  = print_string "I'm alive"; print_newline ();
-  end;;
+(* une classe c qui hérite de l'interface a*)
+class ['a] c_class = 
+object (self)
+inherit ['a] a_class (**)
+method soi = `ClassC self
+method g = 3
+method h = print_string "supplementary method"
+method f = print_string "Third method"
+end;;
 
-debug_entity#add_component a_component;;
+(*Deux nouvelle instances*)
+let b = (new b_class:> _ a_class);;
+let c = (new c_class:> _ a_class);;
 
+(* un tableau de _ a_class*)
+let l =[b;c];;
 
-let scene = new scene [debug_entity];;
-
-(* une image par seconde *)
-let framerate = 1.;; 
-
-let rec gameLoop (scene:scene) (last_time: float) (dt_cumulator:float) : unit= 
-  let t = Sys.time() in
-  let dt = (t -. last_time) in
-
-  (* ici on limite le framerate *)
-  if dt_cumulator >= framerate then (scene#sceneUpdate; gameLoop scene t 0.)
-  else
-  gameLoop scene (t) (dt_cumulator +. dt)
-;;
-gameLoop scene 0. 0.;;
+(* Une fonction qui permet d'accéder à la méhode de son choix*)
+let soi o n = match o with
+`ClassB b -> if n = 1 then b#g else b#h
+| `ClassC c -> if n = 1 then c#g else if n=2 then c#h else c#f;;
