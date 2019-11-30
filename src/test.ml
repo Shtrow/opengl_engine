@@ -1,3 +1,4 @@
+
 (* Création d'une classe virtuelle mère*)
 class virtual ['a] a_class = 
 object
@@ -9,8 +10,7 @@ class ['a] b_class =
 object (self)
 inherit ['a] a_class
 method soi = `ClassB self (* pointeur vers l'objet*)
-method g = 2
-method h =  print_string "supplementary method"
+method h =  print_string "supplementary method\n"
 end;;
 
 (* une classe c qui hérite de l'interface a*)
@@ -19,11 +19,11 @@ object (self)
 inherit ['a] a_class (**)
 method soi = `ClassC self
 method g = 3
-method h = print_string "supplementary method"
-method f = print_string "Third method"
+method h = print_string "supplementary method\n"
+method f = print_string "Third method\n"
 end;;
 
-(*Deux nouvelles instances*)
+(*Deux nouvelle instances*)
 let b = (new b_class:> _ a_class);;
 let c = (new c_class:> _ a_class);;
 
@@ -31,6 +31,20 @@ let c = (new c_class:> _ a_class);;
 let l =[b;c];;
 
 (* Une fonction qui permet d'accéder à la méhode de son choix*)
-let soi o n = match o with
-`ClassB b -> if n = 1 then b#g else b#h
-| `ClassC c -> if n = 1 then c#g else if n=2 then c#h else c#f;;
+
+let geth = function
+`ClassB b -> b#h
+| `ClassC c -> c#h;;
+
+let getf = function
+`ClassB b -> failwith "Il n'y a pas de méthode f\n"
+| `ClassC c -> c#f;;
+
+let c = (new c_class :> _ a_class);;
+getf c#soi;;
+let b = (new b_class :> _ a_class);;
+
+
+List.iter (fun o -> geth o#soi) l;;
+
+getf b#soi;;
