@@ -22,9 +22,9 @@ end
 type component_extension_type += Trasform of transform_values;;
 
 
-class entity  (components : component list)= 
+class entity  (components : _ component list)= 
   object(self)
-    val mutable components : component list = components
+    val mutable components : _ component list = components
     method add_component c = 
       components <- c::components
     method get_components = components
@@ -32,21 +32,24 @@ class entity  (components : component list)=
     initializer self#add_component (new transform (self:>entity))
   end
 
-and virtual component  ?component_extension (entity :  entity) (tag : string) = 
+and virtual ['a] component (entity :  entity) (tag : string) = 
   object(self)
+    val mutable virtual decoration: 'a 
     val mutable _entity : entity = entity
     val mutable tag : string = tag
-    val mutable c_e : component_extension_type = if Option.is_some component_extension then Option.get component_extension else Dummy
-    method get_component_extension = c_e
+    method decorated = decoration
     method get_entity = _entity
     method get_tag = tag
     method init : unit = ()
     method update : unit = ()
+    initializer (decoration <-self);
   end
 
 and transform (entity : entity )= 
   object(self)
-    inherit  component entity "transform" ~component_extension:(Trasform new transform_values )
+    method decoration = (`Transform self) "transform"
+    inherit  ['a] component entity "transform" 
+    method decorated = `Transform self
     (* ici, update ne sert à rien *)
   end
 
