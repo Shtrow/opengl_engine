@@ -23,7 +23,7 @@ let normalise_vector (x,y,z) : vector2 =
 
 
 let rotation_matrix_of_axis ~dir ~angle =
-  let angle = angle *. 0.5 in
+  let angle = angle in
   let vn_x, vn_y, vn_z = normalise_vector dir in
   let sinAngle = sin angle in
   let qx = vn_x *. sinAngle
@@ -114,7 +114,7 @@ let perspective_projection ~fov ~ratio ~near ~far =
      0.0; 0.0; f;   0.0; |]
 
 let rotate dir angle m = 
-  mult_matrix  (rotation_matrix_of_axis dir angle ) (m) 
+  mult_matrix (m) (rotation_matrix_of_axis dir angle )  
 
 let translate (x,y,z) m= 
   let t_m = translation_matrix (x,y,z) in
@@ -336,14 +336,7 @@ let viewMatrixUnif = glGetUniformLocation shaderProgram "view" ;;
 let projectionMatrixUnif = glGetUniformLocation shaderProgram "projection" ;;
 
 
-(* Matrix test *)
-let tranform_matrix =  (Matrix.rotation_matrix_of_axis (0.0,0.0,1.0) 1.57) ;;
 
-let model_matrix = Matrix.rotation_matrix_of_axis  (1.0,0.0,0.0) (rad (-. 55.0));;
-
-let view_matrix =  Matrix.translation_matrix (0.0,0.0,-3.0);;
-
-let perspective_projection_matrix = Matrix.perspective_projection (45.0) (float_of_int width/. float_of_int height) 0.1 100.0;; 
 
 (* Multiple cube *)
 let cube_position = 
@@ -397,19 +390,30 @@ while (not (GLFW.windowShouldClose ~window:window)) do
   (* drawing triangle *)
   glUseProgram shaderProgram ;
   (* glBindTexture2D texture_id; *)
-  glBindVertexArray vao;
+
 
   (* vertex Tranformation *)
+  (* Matrix test *)
+(* let tranform_matrix =  (Matrix.rotation_matrix_of_axis (0.0,0.0,1.0) 1.57) ;; *)
+  let model_matrix = Matrix.rotation_matrix_of_axis  (1.0,0.0,0.0) (rad (-. 55.0)) in
 
-  
+  let view_matrix =  Matrix.translation_matrix (0.0,0.0,-3.0) in
+  (* print_float view_matrix.(1) ; 
+  print_newline (); *)
+  (* let view_matrix = view_matrix |>Matrix.rotate (1.0,5.0,-5.0) (rad (-. 55.0))  in
+  print_float view_matrix.(1);
+  print_newline (); *)
+
+  let perspective_projection_matrix = Matrix.perspective_projection (45.0) (float_of_int width/. float_of_int height) 0.1 100.0 in
+    
   glUniformMatrix4fv viewMatrixUnif 1 false view_matrix;
   glUniformMatrix4fv projectionMatrixUnif 1 false perspective_projection_matrix;
-
-  List.iter
+  glBindVertexArray vao;
+  List.iteri
   (
-    fun position->
-      let new_model_matrix = Matrix.translation_matrix position |> Matrix.rotate (2.0,1.3,1.5) (rad 20.0 ) in
-
+    fun  i position->
+      let new_model_matrix = Matrix.rotation_matrix_of_axis (1.0,0.3,0.5) (rad (20.0 *. float i) ) |> Matrix.translate position in
+      
       glUniformMatrix4fv modelMatrixUnif 1 false new_model_matrix;
       glDrawArrays ~mode:GL_TRIANGLES ~first:0 ~count:36;
       
