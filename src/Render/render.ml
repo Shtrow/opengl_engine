@@ -139,12 +139,22 @@ open VertArray
 open VBO
 open Tsdl
 open GLFW
+open Ogl_matrix
 (* open Glu *)
 open Glut
 let height = 600;;
 let width = 800;;
 
-
+let checkError () = let e = (glGetError()) in
+match e with
+| GL.GL_NO_ERROR -> print_string "NO ERROR"
+| GL.GL_INVALID_ENUM -> failwith "1"
+| GL.GL_INVALID_VALUE -> failwith "2"
+| GL.GL_INVALID_OPERATION -> failwith "3"
+| GL.GL_STACK_OVERFLOW -> failwith "4"
+| GL.GL_STACK_UNDERFLOW -> failwith "5"
+| GL.GL_OUT_OF_MEMORY -> failwith "6"
+| GL.GL_TABLE_TOO_LARGE -> failwith "7"
 
 
 (* VERTEX SHADER *)
@@ -397,7 +407,7 @@ while (not (GLFW.windowShouldClose ~window:window)) do
 (* let tranform_matrix =  (Matrix.rotation_matrix_of_axis (0.0,0.0,1.0) 1.57) ;; *)
   let model_matrix = Matrix.rotation_matrix_of_axis  (1.0,0.0,0.0) (rad (-. 55.0)) in
 
-  let view_matrix =  Matrix.translation_matrix (0.0,0.0,-3.0) in
+  let view_matrix =  Ogl_matrix.translation_matrix (0.0,0.0,-3.0) in
   (* print_float view_matrix.(1) ; 
   print_newline (); *)
   (* let view_matrix = view_matrix |>Matrix.rotate (1.0,5.0,-5.0) (rad (-. 55.0))  in
@@ -408,18 +418,28 @@ while (not (GLFW.windowShouldClose ~window:window)) do
     
   glUniformMatrix4fv viewMatrixUnif 1 false view_matrix;
   glUniformMatrix4fv projectionMatrixUnif 1 false perspective_projection_matrix;
+
   glBindVertexArray vao;
   List.iteri
   (
     fun  i position->
-      let new_model_matrix = Matrix.rotation_matrix_of_axis (1.0,0.3,0.5) (rad (20.0 *. float i) ) |> Matrix.translate position in
+      let speed = 100.0 in
+      let trans = Ogl_matrix.translation_matrix position in 
+
+      let y = Ogl_matrix.y_rotation_matrix ((float i) *. Sys.time() *.speed) in
+      let x = Ogl_matrix.x_rotation_matrix (float ((i )) *. Sys.time()*.speed) in
+      let z = Ogl_matrix.x_rotation_matrix (float i *. Sys.time()*.speed) in
+
+      let t = mult_matrix x (mult_matrix y z) in
+      let tmp = Ogl_matrix.mult_matrix trans t in
+
       
-      glUniformMatrix4fv modelMatrixUnif 1 false new_model_matrix;
+      glUniformMatrix4fv modelMatrixUnif 1 false tmp;
       glDrawArrays ~mode:GL_TRIANGLES ~first:0 ~count:36;
       
   )
   cube_position;
-
+  checkError ();
   (* glDrawElements0 GL_TRIANGLES (Bigarray.Array1.dim triangle_indices) GL_UNSIGNED_INT ; *)
 
 
