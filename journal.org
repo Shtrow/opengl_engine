@@ -46,3 +46,12 @@
   - afficher des objets
   - trouver une solution  avec des GADTs/first-class modules/marshalling ?
 
+
+* <20/01/2020>
+** Fait:
+* Affichage des objets
+** A faire:
+* Ajouter les nouvautés dans la branche master
+* Travailler en binôme
+* Ajouter un fichier README qui explique comme compiler 
+* et executer le code
