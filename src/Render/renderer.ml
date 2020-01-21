@@ -5,24 +5,12 @@ open Tsdl
 open GLFW
 open Glut
 open Ogl_matrix
-let checkError i = let e = (glGetError()) in
-print_string i;
-print_string " : ";
-begin
-match e with
-| GL.GL_NO_ERROR -> print_string "NO ERROR"
-| GL.GL_INVALID_ENUM -> failwith "1"
-| GL.GL_INVALID_VALUE -> failwith "2"
-| GL.GL_INVALID_OPERATION -> failwith "3"
-| GL.GL_STACK_OVERFLOW -> failwith "4"
-| GL.GL_STACK_UNDERFLOW -> failwith "5"
-| GL.GL_OUT_OF_MEMORY -> failwith "6"
-| GL.GL_TABLE_TOO_LARGE -> failwith "7"
-end;
-print_newline();
+
+let width = 800
+let height = 600
+
 module Window =
 struct
-
 
 (* Using the OpenGL Core *)
 let glfw_init ()= 
@@ -34,9 +22,9 @@ let glfw_init ()=
 (* Here we initialize the window *)
 let glfw_instanciate_window ~height ~width ~title = 
   let window = GLFW.createWindow ~width:width ~height:height ~title:title () in 
-  let frame_buffer_size_callback = fun window width height -> glViewport ~x:0 ~y:0 ~width:width ~height:height in 
-
   makeContextCurrent ~window:(Some window) ;
+
+  let frame_buffer_size_callback = fun window width height -> glViewport ~x:0 ~y:0 ~width:width ~height:height in 
   setFramebufferSizeCallback ~window:window ~f:(Option.Some(frame_buffer_size_callback)) |> ignore ; 
 
   glViewport ~x:0 ~y:0 ~height:height ~width:width ; 
@@ -53,42 +41,54 @@ type texture2D = {
   internal_format : InternalFormat.internal_format ;
   pixel_data_format : pixel_data_format ; 
 }
+module ResourceManager = 
+struct
+  let texturesBuffer = ref []
+  let addTexture t = texturesBuffer := t::!texturesBuffer
 
 
-let generate_texture ((data : image_data), width, height, internal_format ,pixel_data_format) =
-  let tex = 
-  {
-    id = glGenTexture ();
-    size = (height,width);
-    wrap_s = GL_REPEAT;
-    wrap_t = GL_REPEAT;
-    filter_Min = GL_LINEAR;
-    filter_Max = GL_LINEAR;
-    internal_format = internal_format;
-    pixel_data_format = pixel_data_format;
-  } in
-  checkError "afterGenTexture";
-  (* Create texture *)
-  glBindTexture2D tex.id;
-  glTexImage2D GL_TEXTURE_2D 0 tex.internal_format width height tex.pixel_data_format GL_UNSIGNED_BYTE data;
-  
-  (* Set Texture settings *)
-  glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_WRAP_S tex.wrap_s);
-  glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_WRAP_T tex.wrap_t);
-  glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_MIN_FILTER tex.filter_Min);
-  glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_MAG_FILTER tex.filter_Max);
+  let generate_texture ((data : image_data), width, height, internal_format ,pixel_data_format) =
+    let tex = 
+    {
+      id = glGenTexture ();
+      size = (height,width);
+      wrap_s = GL_REPEAT;
+      wrap_t = GL_REPEAT;
+      filter_Min = Min.GL_LINEAR;
+      filter_Max = Mag.GL_LINEAR;
+      internal_format = GL_RGB;
+      pixel_data_format = GL_RGB;
+    } in
+    glBindTexture2D tex.id;
+    
+    (* Set Texture settings *)
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_WRAP_S tex.wrap_s);
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_WRAP_T tex.wrap_t);
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_MIN_FILTER tex.filter_Min);
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_MAG_FILTER tex.filter_Max);
 
-  (* Unbind texture *)
-  glUnbindTexture2D ();
+    (* Loading texture in GPU buffer*)
+    glTexImage2D GL_TEXTURE_2D 0 tex.internal_format width height tex.pixel_data_format GL_UNSIGNED_BYTE data;
 
-  tex
+    (* Unbind texture *)
+    glUnbindTexture2D ();
 
-let bind_texture texture = 
-  glBindTexture2D texture.id;;
+    tex
 
-let load_texture_from_file path = 
-  let s = Jpeg_loader.load_img (Filename path) in
-  generate_texture s 
+  let bind_texture texture = 
+    glBindTexture2D texture.id;;
+
+  let load_texture_from_file path = 
+    let format = Filename.extension path in 
+    let s = 
+    match format with 
+    | ".jpeg" | ".jpg" -> 
+      Jpeg_loader.load_img (Filename path) 
+    | ".png" -> failwith "png is not supported yet"
+    | _ -> failwith "unkmown format"
+      in
+    generate_texture s 
+end
 
 module Shader  =
 struct
@@ -116,7 +116,7 @@ struct
 
   void main()
   {    
-      color = vec4(spriteColor, 1.0) * texture(image, TexCoords);
+      color =  vec4(spriteColor, 1.0) * texture(image, TexCoords); // multiply by ec4(spriteColor, 1.0) to add color 
   }";;
   let shaderP = ref None
   let getShaderProg () = Option.get (!shaderP)
@@ -147,7 +147,7 @@ struct
   let use () = 
     match !shaderP with
     |None -> failwith "No shader programm !";
-    |Some _ -> glUseProgram (getShaderProg ()) ; print_endline (glGetProgramInfoLog (getShaderProg())); checkError "in Shader.use"
+    |Some _ -> glUseProgram (getShaderProg ())
   
   let setMatrix4 name mat = 
     let matrix = glGetUniformLocation (getShaderProg()) name in
@@ -184,67 +184,60 @@ struct
 
     
     let vertexPositionAttrib = glGetAttribLocation (Shader.getShaderProg ()) "vertex" in
-    print_int vertexPositionAttrib;
     glEnableVertexAttribArray vertexPositionAttrib; (** layout (location = 0) in vec4 vertex *)
     glVertexAttribPointerOfs32 vertexPositionAttrib 4 GL_FLOAT  false 4 0;
 
     (* Unbinding *)
-    glUnbindBuffer GL_ARRAY_BUFFER;
     glBindVertexArray 0
+    (* glUnbindBuffer GL_ARRAY_BUFFER; *)
 
-  let drawSprite (texture:texture2D) ~position:((x,y) ) ~size:((s_x,s_y)) ~angle:(angle) ~color:(color) =
+  let drawSprite ~texture2D ~position:((x,y) ) ~size:((s_x,s_y)) ~angle ~color =
     (* TODO : Wrap shader *)
-    checkError "draw sprite before shader.use";
     Shader.use ();
-    checkError "draw sprite after shader.use";
-    (* initRenderData(); *)
-    let tmp = Ogl_matrix.translation_matrix (x,y,0.0) in
+
+    let tmp = (Ogl_matrix.get_identity()) in
+    Ogl_matrix.matrix_translate (x,y,0.0) tmp;
 
     (* Moving origin of location to center for rotation *)
     Ogl_matrix.matrix_translate (0.5*. s_x, 0.5 *. s_y,0.0) tmp;
-    (* TODO : CREATE ANOTHER ROTATION FUNCTION *)
+
+    let angle_matrix = Ogl_matrix.z_rotation_matrix angle in 
+
+    let tmp = Ogl_matrix.mult_matrix tmp angle_matrix in 
     (* Moving back the origin *)
+
     Ogl_matrix.matrix_translate (-0.5*. s_x, -0.5 *. s_y,0.0) tmp;
 
-    let model = Ogl_matrix.mult_matrix tmp (Ogl_matrix.scale_matrix (s_x,s_y,1.0)) in (** Maybe the wrong order*)
+    let model = Ogl_matrix.mult_matrix tmp (Ogl_matrix.scale_matrix (s_x,s_y,1.0))  in (** Maybe the wrong order*)
     
-    checkError "before set matrix";
     (* checkError(); *)
     Shader.setMatrix4 "model" model;
-    Shader.setVector3 "color" color;
-    checkError "after set matrix";
+    Shader.setVector3 "spriteColor" color;
 
     glActiveTexture(GL_TEXTURE0);
-    bind_texture texture;
-    checkError "after bind texture";
+    ResourceManager.bind_texture texture2D;
 
     glBindVertexArray !vao;
+    
     glDrawArrays GL_TRIANGLES 0 6;
     glBindVertexArray 0;
-    checkError "after drawArray";
 end;;
 
-
-
-
-module Game = 
+module Camera = 
 struct
-  let current_scene = 0
-  let update deltaTime = 
-    ()
-
-  let texture () = load_texture_from_file "res/container.jpg"
-  let render () = 
-  checkError "game.render";
-  SpriteRenderer.drawSprite (texture()) (200.0,200.0) (300.0,400.0) 45.0 ([|1.0;2.0;3.0|])
+  let projection = Ogl_matrix.ortho_projection 0.0 (float 800) (float 600) 0.0 (-1.0) 1.0
+  let init() = 
+    Shader.setMatrix4 "projection" projection
 
 end
-let width = 800
-let height = 600
-let projection = Ogl_matrix.ortho_projection 0.0 (float width) (float height) 0.0 (-1.0) 1.0
-
 
 (* TESTING OPENGL, NOT FINAL CODE *)
+  let render () = 
+
+  (* For each gameObject do "that function" *)
+    let texture = (List.hd !(ResourceManager.texturesBuffer)) in 
+    let (w,h) = texture.size in
+    SpriteRenderer.drawSprite  texture (300.0,200.0) (float h,float w) 45.0 [|1.0;1.0;1.0|]
 
 let dt_ref = ref 0;;
 
@@ -264,12 +257,12 @@ let rec gameLoop (last_time: float) (dt_cumulator:float) window: unit=
   processIntput window;
 
   (* Updating game state *)
-  Game.update dt;
   
   (* rendering *)
   glClearColor ~r:0.0 ~g:0.0 ~b:0.0 ~a:1.0;
   glClear ~mask: [GL_COLOR_BUFFER_BIT; GL_DEPTH_BUFFER_BIT];
-  Game.render();
+  glEnable (GL_DEPTH_TEST);
+  render();
 
 
   swapBuffers window;
@@ -287,6 +280,9 @@ let rec gameLoop (last_time: float) (dt_cumulator:float) window: unit=
     Window.glfw_init ();
     let window = Window.glfw_instanciate_window height width "The Game" in
     Shader.init();
+    Shader.use ();
+    Camera.init();
+    ResourceManager.load_texture_from_file "res/megaman.jpg" |> ResourceManager.addTexture;
     SpriteRenderer.initRenderData();
     glEnable (GL_DEPTH_TEST);
 

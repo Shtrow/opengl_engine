@@ -12,6 +12,10 @@ gl: ogl_matrix
 	cd src/Render ; \
 	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx renderer.ml
 
+test: ogl_matrix
+	cd src/Render ; \
+	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx test.ml
+
 ogl_matrix: 
 	cd src/Render ; \
 	ocamlopt ogl_matrix.mli ; \
