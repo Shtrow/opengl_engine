@@ -112,11 +112,12 @@ struct
   out vec4 color;
 
   uniform sampler2D image;
-  uniform vec3 spriteColor;
+  uniform vec4 spriteColor;
 
   void main()
   {    
-      color =  vec4(spriteColor, 1.0) * texture(image, TexCoords); // multiply by ec4(spriteColor, 1.0) to add color 
+      color = spriteColor * texture(image, TexCoords); // multiply by ec4(spriteColor, 1.0) to add color 
+      //color = vec4(color.xyz,0.5);
   }";;
   let shaderP = ref None
   let getShaderProg () = Option.get (!shaderP)
@@ -155,7 +156,10 @@ struct
 
   let setVector3 name vec = 
     let vector3 = glGetUniformLocation (getShaderProg()) name in
-    glUniform3fv vector3 1 vec;
+    glUniform3fv vector3 1 vec
+  let setVector4 name vec = 
+    let vector4 = glGetUniformLocation (getShaderProg()) name in
+    glUniform4fv vector4 1 vec;
 end
 
 module SpriteRenderer =
@@ -191,12 +195,12 @@ struct
     glBindVertexArray 0
     (* glUnbindBuffer GL_ARRAY_BUFFER; *)
 
-  let drawSprite ~texture2D ~position:((x,y) ) ~size:((s_x,s_y)) ~angle ~color =
+  let drawSprite ~texture2D ~position:((x,y,z) ) ~size:((s_x,s_y)) ~angle ~color =
     (* TODO : Wrap shader *)
     Shader.use ();
 
     let tmp = (Ogl_matrix.get_identity()) in
-    Ogl_matrix.matrix_translate (x,y,0.0) tmp;
+    Ogl_matrix.matrix_translate (x,y,z) tmp;
 
     (* Moving origin of location to center for rotation *)
     Ogl_matrix.matrix_translate (0.5*. s_x, 0.5 *. s_y,0.0) tmp;
@@ -212,7 +216,7 @@ struct
     
     (* checkError(); *)
     Shader.setMatrix4 "model" model;
-    Shader.setVector3 "spriteColor" color;
+    Shader.setVector4 "spriteColor" color;
 
     glActiveTexture(GL_TEXTURE0);
     ResourceManager.bind_texture texture2D;
@@ -235,9 +239,12 @@ end
   let render () = 
 
   (* For each gameObject do "that function" *)
-    let texture = (List.hd !(ResourceManager.texturesBuffer)) in 
-    let (w,h) = texture.size in
-    SpriteRenderer.drawSprite  texture (300.0,200.0) (float h,float w) 45.0 [|1.0;1.0;1.0|]
+    List.iteri (fun i texture ->
+
+      let (w,h) = texture.size in
+      SpriteRenderer.drawSprite  texture (300.0,200.0,1.0*.(float i)) (float h,float w) (float (i+1)  *. 45.0) [|0.0;0.5;1.0;1.5|]
+    
+    )!ResourceManager.texturesBuffer
 
 let dt_ref = ref 0;;
 
@@ -259,9 +266,9 @@ let rec gameLoop (last_time: float) (dt_cumulator:float) window: unit=
   (* Updating game state *)
   
   (* rendering *)
-  glClearColor ~r:0.0 ~g:0.0 ~b:0.0 ~a:1.0;
+  glClearColor ~r:0.5 ~g:0.5 ~b:0.5 ~a:1.0;
   glClear ~mask: [GL_COLOR_BUFFER_BIT; GL_DEPTH_BUFFER_BIT];
-  glEnable (GL_DEPTH_TEST);
+  (* glEnable (GL_DEPTH_TEST); *)
   render();
 
 
@@ -276,15 +283,17 @@ let rec gameLoop (last_time: float) (dt_cumulator:float) window: unit=
   else ()
 
   let test ()= 
-    
     Window.glfw_init ();
     let window = Window.glfw_instanciate_window height width "The Game" in
     Shader.init();
-    Shader.use ();
     Camera.init();
-    ResourceManager.load_texture_from_file "res/megaman.jpg" |> ResourceManager.addTexture;
     SpriteRenderer.initRenderData();
+    glEnable GL_BLEND;
+    glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA;  
     glEnable (GL_DEPTH_TEST);
+    
+    ResourceManager.load_texture_from_file "res/megaman.jpg" |> ResourceManager.addTexture;
+    ResourceManager.load_texture_from_file "res/container.jpg" |> ResourceManager.addTexture;
 
     (* GAME LOOP *)
     glPolygonMode GL_FRONT_AND_BACK GL_FILL ;
