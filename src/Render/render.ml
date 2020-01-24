@@ -1,150 +1,18 @@
-module Matrix = 
-struct
-type vector2 = float*float*float
-type matrix = float array
-
-let identity  =
-  [| 1.0; 0.0; 0.0; 0.0;
-     0.0; 1.0; 0.0; 0.0;
-     0.0; 0.0; 1.0; 0.0;
-     0.0; 0.0; 0.0; 1.0; |]
-
-
-let translation_matrix (x,y,z) =
-  [| 1.0; 0.0; 0.0; 0.0;
-     0.0; 1.0; 0.0; 0.0;
-     0.0; 0.0; 1.0; 0.0;
-       x;   y;   z; 1.0; |]
-
-
-let normalise_vector (x,y,z) : vector2 =
-  let len = sqrt(x *. x +. y *. y +. z *. z) in
-  (x /. len, y /. len, z /. len)
-
-
-let rotation_matrix_of_axis ~dir ~angle =
-  let angle = angle in
-  let vn_x, vn_y, vn_z = normalise_vector dir in
-  let sinAngle = sin angle in
-  let qx = vn_x *. sinAngle
-  and qy = vn_y *. sinAngle
-  and qz = vn_z *. sinAngle
-  and qw = cos angle
-  in
-  let x2 = qx *. qx
-  and y2 = qy *. qy
-  and z2 = qz *. qz
-  and xy = qx *. qy
-  and xz = qx *. qz
-  and yz = qy *. qz
-  and wx = qw *. qx
-  and wy = qw *. qy
-  and wz = qw *. qz in
-  [| 1.0 -. 2.0 *. (y2 +. z2) ; 2.0 *. (xy -. wz);  2.0 *. (xz +. wy); 0.0;
-     2.0 *. (xy +. wz);  1.0 -. 2.0 *. (x2 +. z2);  2.0 *. (yz -. wx); 0.0;
-     2.0 *. (xz -. wy);  2.0 *. (yz +. wx);  1.0 -. 2.0 *. (x2 +. y2); 0.0;
-     0.0;  0.0;  0.0;  1.0; |]
-
-let mult_matrix ~m1 ~m2 =
-  if Array.length m1 <> 16
-  || Array.length m2 <> 16
-  then invalid_arg "mult_matrix";
-
-  let mat1_get = Array.unsafe_get m1
-  and mat2_get = Array.unsafe_get m2 in
-
-  let m1_0  = mat1_get 0     and m2_0  = mat2_get 0
-  and m1_1  = mat1_get 1     and m2_1  = mat2_get 1
-  and m1_2  = mat1_get 2     and m2_2  = mat2_get 2
-  and m1_3  = mat1_get 3     and m2_3  = mat2_get 3
-  and m1_4  = mat1_get 4     and m2_4  = mat2_get 4
-  and m1_5  = mat1_get 5     and m2_5  = mat2_get 5
-  and m1_6  = mat1_get 6     and m2_6  = mat2_get 6
-  and m1_7  = mat1_get 7     and m2_7  = mat2_get 7
-  and m1_8  = mat1_get 8     and m2_8  = mat2_get 8
-  and m1_9  = mat1_get 9     and m2_9  = mat2_get 9
-  and m1_10 = mat1_get 10    and m2_10 = mat2_get 10
-  and m1_11 = mat1_get 11    and m2_11 = mat2_get 11
-  and m1_12 = mat1_get 12    and m2_12 = mat2_get 12
-  and m1_13 = mat1_get 13    and m2_13 = mat2_get 13
-  and m1_14 = mat1_get 14    and m2_14 = mat2_get 14
-  and m1_15 = mat1_get 15    and m2_15 = mat2_get 15
-  in
-  [|
-    m1_0 *. m2_0  +. m1_4 *. m2_1  +. m1_8  *. m2_2  +. m1_12 *. m2_3;
-    m1_1 *. m2_0  +. m1_5 *. m2_1  +. m1_9  *. m2_2  +. m1_13 *. m2_3;
-    m1_2 *. m2_0  +. m1_6 *. m2_1  +. m1_10 *. m2_2  +. m1_14 *. m2_3;
-    m1_3 *. m2_0  +. m1_7 *. m2_1  +. m1_11 *. m2_2  +. m1_15 *. m2_3;
-    m1_0 *. m2_4  +. m1_4 *. m2_5  +. m1_8  *. m2_6  +. m1_12 *. m2_7;
-    m1_1 *. m2_4  +. m1_5 *. m2_5  +. m1_9  *. m2_6  +. m1_13 *. m2_7;
-    m1_2 *. m2_4  +. m1_6 *. m2_5  +. m1_10 *. m2_6  +. m1_14 *. m2_7;
-    m1_3 *. m2_4  +. m1_7 *. m2_5  +. m1_11 *. m2_6  +. m1_15 *. m2_7;
-    m1_0 *. m2_8  +. m1_4 *. m2_9  +. m1_8  *. m2_10 +. m1_12 *. m2_11;
-    m1_1 *. m2_8  +. m1_5 *. m2_9  +. m1_9  *. m2_10 +. m1_13 *. m2_11;
-    m1_2 *. m2_8  +. m1_6 *. m2_9  +. m1_10 *. m2_10 +. m1_14 *. m2_11;
-    m1_3 *. m2_8  +. m1_7 *. m2_9  +. m1_11 *. m2_10 +. m1_15 *. m2_11;
-    m1_0 *. m2_12 +. m1_4 *. m2_13 +. m1_8  *. m2_14 +. m1_12 *. m2_15;
-    m1_1 *. m2_12 +. m1_5 *. m2_13 +. m1_9  *. m2_14 +. m1_13 *. m2_15;
-    m1_2 *. m2_12 +. m1_6 *. m2_13 +. m1_10 *. m2_14 +. m1_14 *. m2_15;
-    m1_3 *. m2_12 +. m1_7 *. m2_13 +. m1_11 *. m2_14 +. m1_15 *. m2_15;
-  |]
-let perspective_projection ~fov ~ratio ~near ~far =
-
-  let pi = 3.14159265358979323846 in
-  let maxY = near *. tan (fov *. pi /. 360.0) in
-  let minY = -. maxY in
-  let minX = minY *. ratio
-  and maxX = maxY *. ratio in
-
-  let x_diff = maxX -. minX in
-  let y_diff = maxY -. minY in
-  let z_diff = far -. near in
-  let near_twice = 2.0 *. near in
-
-  let a = near_twice /. x_diff
-  and b = near_twice /. y_diff
-  and c = (maxX +. minX) /. x_diff
-  and d = (maxY +. minY) /. y_diff
-  and e = -. (far +. near) /. z_diff
-  and f = -. (near_twice *. far) /. z_diff
-  in
-  [| a;   0.0; 0.0; 0.0;
-     0.0; b;   0.0; 0.0;
-     c;   d;   e;  -1.0;
-     0.0; 0.0; f;   0.0; |]
-
-let rotate dir angle m = 
-  mult_matrix (m) (rotation_matrix_of_axis dir angle )  
-
-let translate (x,y,z) m= 
-  let t_m = translation_matrix (x,y,z) in
-  mult_matrix m t_m
-
-end;;
-(* let create_window h w =
-  Sdl.init Sdl.Init.everything |> ignore ;
-  Sdl.init Sdl.Init.video |> ignore ;
-  let window = Sdl.create_window "My Game" ~h:h ~w:w (Sdl.Window.(+) Sdl.Window.shown Sdl.Window.opengl) |> get_result in
-  (* let window = Sdl.Window.create ~title:"My Game" ~dims:(h,w) in  *)
-  let event = Sdl.Event.create () in
-
-  let gl_context = Sdl.gl_create_context window |> get_result in 
-
-
-  let () = 
-  create_window 600 800;; *)
-
 open GL
 open VertArray
 open VBO
 open Tsdl
 open GLFW
-open Ogl_matrix
-(* open Glu *)
 open Glut
-let height = 600;;
-let width = 800;;
+open Ogl_matrix
 
+let width = 800
+let height = 600
+let dt_ref = ref 0.0;;
+
+let dt () = !dt_ref;;
+
+let framerate = 1.;;
 let checkError () = let e = (glGetError()) in
 match e with
 | GL.GL_NO_ERROR -> print_string "NO ERROR"
@@ -154,169 +22,321 @@ match e with
 | GL.GL_STACK_OVERFLOW -> failwith "4"
 | GL.GL_STACK_UNDERFLOW -> failwith "5"
 | GL.GL_OUT_OF_MEMORY -> failwith "6"
-| GL.GL_TABLE_TOO_LARGE -> failwith "7"
+| GL.GL_TABLE_TOO_LARGE -> failwith "7";;
+
+module Window =
+struct
+
+(* Using the OpenGL Core *)
+let glfw_init ()= 
+  init();
+  windowHint ~hint:ContextVersionMajor ~value:3;
+  windowHint ~hint:ContextVersionMinor ~value:3;
+  windowHint ~hint:OpenGLProfile ~value:CoreProfile
+
+(* Here we initialize the window *)
+let glfw_instanciate_window ~height ~width ~title = 
+  let window = GLFW.createWindow ~width:width ~height:height ~title:title () in 
+  makeContextCurrent ~window:(Some window) ;
+
+  let frame_buffer_size_callback = fun window width height -> glViewport ~x:0 ~y:0 ~width:width ~height:height in 
+  setFramebufferSizeCallback ~window:window ~f:(Option.Some(frame_buffer_size_callback)) |> ignore ; 
+
+  glViewport ~x:0 ~y:0 ~height:height ~width:width ; 
+  window
+end
+
+type texture2D = {
+  id : texture_id;
+  size : int * int; (*  height * width *) 
+  wrap_s : wrap_param;
+  wrap_t : wrap_param;
+  filter_Min : Min.min_filter; (*Filtering mode if texture pixels < screen pixels*)
+  filter_Max : Mag.mag_filter; (*Filtering mode if texture pixels > screen pixels*)
+  internal_format : InternalFormat.internal_format ;
+  pixel_data_format : pixel_data_format ; 
+}
+module ResourceManager = 
+struct
+  (* let texturesBuffer = ref []
+  let addTexture t = texturesBuffer := t::!texturesBuffer *)
 
 
-(* VERTEX SHADER *)
-let vertexShaderSource = "
-#version 330 core
-in vec3 aPos;
-in vec4 myColour;
-in vec2 texturePos;
+  let generate_texture ((data : image_data), width, height, internal_format ,pixel_data_format) =
+    let tex = 
+    {
+      id = glGenTexture ();
+      size = (height,width);
+      wrap_s = GL_REPEAT;
+      wrap_t = GL_REPEAT;
+      filter_Min = Min.GL_NEAREST;
+      filter_Max = Mag.GL_NEAREST;
+      internal_format = internal_format;
+      pixel_data_format = pixel_data_format;
+    } in
+    glBindTexture2D tex.id;
+    
+    (* Set Texture settings *)
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_WRAP_S tex.wrap_s);
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_WRAP_T tex.wrap_t);
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_MIN_FILTER tex.filter_Min);
+    glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_MAG_FILTER tex.filter_Max);
 
-out vec4 colour;
-out vec2 texCoord;
+    (* Loading texture in GPU buffer*)
+    glTexImage2D GL_TEXTURE_2D 0 tex.internal_format width height tex.pixel_data_format GL_UNSIGNED_BYTE data;
 
-uniform float x_offset;
+    (* Unbind texture *)
+    glUnbindTexture2D ();
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+    tex
 
-void main()
+  let bind_texture texture = 
+    glBindTexture2D texture.id;;
+
+  let load_texture_from_file path = 
+    let format = Filename.extension path in 
+    let s = 
+    match format with 
+    | ".jpeg" | ".jpg" -> 
+      Jpeg_loader.load_img (Filename path) 
+    | ".png" -> failwith "png is not supported yet"
+    | _ -> failwith "unkmown format"
+      in
+    generate_texture s 
+end
+
+module Shader  =
+struct
+  let vertexShaderSource = 
+  "#version 330 core
+  layout (location = 0) in vec4 vertex; // <vec2 position, vec2 texCoords>
+
+  out vec2 TexCoords;
+
+  uniform mat4 model;
+  uniform mat4 projection;
+
+  void main()
+  {
+      TexCoords = vertex.zw;
+      gl_Position = projection * model * vec4(vertex.xy, 0.0, 1.0);
+  }";;
+  let fragmentShaderSource = 
+  "#version 330 core
+  in vec2 TexCoords;
+  out vec4 color;
+
+  uniform sampler2D image;
+  uniform vec4 spriteColor;
+
+  void main()
+  {    
+      color = spriteColor * texture(image, TexCoords); // multiply by ec4(spriteColor, 1.0) to add color 
+      //color = vec4(color.xyz,0.5);
+  }";;
+  let shaderP = ref None
+  let getShaderProg () = Option.get (!shaderP)
+  let init () = 
+    let vertexShader = glCreateShader ~shader_type:GL_VERTEX_SHADER in
+    glShaderSource ~shader:vertexShader vertexShaderSource;
+    glCompileShader ~shader:vertexShader;
+    if glGetShaderCompileStatus ~shader:vertexShader then () else print_endline "vertex shader compilation failed";
+    print_endline (glGetShaderInfoLog ~shader:vertexShader);
+
+    let fragmentShader = glCreateShader ~shader_type:GL_FRAGMENT_SHADER in
+    glShaderSource ~shader:fragmentShader fragmentShaderSource;
+    glCompileShader ~shader:fragmentShader;
+    if glGetShaderCompileStatus ~shader:fragmentShader then () else print_endline "fragment shader compilation failed";
+
+    (* shaderProgram, which is the linking of all shaders previously defined*)
+    let shaderProgram = glCreateProgram() in
+    glAttachShader ~program:shaderProgram ~shader:vertexShader;
+    glAttachShader ~program:shaderProgram ~shader:fragmentShader;
+    glLinkProgram ~program:shaderProgram;
+    glUseProgram ~program:shaderProgram;
+    (* deleting shaders, dont need anymore *)
+    glDeleteShader~shader:vertexShader;
+    glDeleteShader~shader:fragmentShader;
+    glUseProgram shaderProgram;
+    shaderP := Some shaderProgram
+
+  let use () = 
+    match !shaderP with
+    |None -> failwith "No shader programm !";
+    |Some _ -> glUseProgram (getShaderProg ())
+  
+  let setMatrix4 name mat = 
+    let matrix = glGetUniformLocation (getShaderProg()) name in
+    glUniformMatrix4fv matrix 1 false mat
+
+  let setVector3 name vec = 
+    let vector3 = glGetUniformLocation (getShaderProg()) name in
+    glUniform3fv vector3 1 vec
+  let setVector4 name vec = 
+    let vector4 = glGetUniformLocation (getShaderProg()) name in
+    glUniform4fv vector4 1 vec;
+end
+
+module SpriteRenderer =
+struct
+  
+
+  let vao = ref 0
+  let initRenderData () = 
+    let verticies = Bigarray.Array1.of_array Bigarray.float32 Bigarray.c_layout [|
+      (* position *)    (* texture coords *)
+      0.0; 1.0;      0.0; 1.0;
+      1.0; 0.0;     1.0;0.0;
+      0.0; 0.0;    0.0;0.0;
+
+      0.0; 1.0;      0.0; 1.0;
+      1.0; 1.0;     1.0;1.0;
+      1.0; 0.0;    1.0;0.0;
+    |] in 
+    let vbo = glGenBuffer () in
+    vao := (glGenVertexArray());
+    glBindVertexArray !vao;
+
+    (* VBO *)
+    glBindBuffer GL_ARRAY_BUFFER vbo;
+    glBufferData GL_ARRAY_BUFFER (ba_sizeof verticies) verticies GL_STATIC_DRAW;
+
+    
+    let vertexPositionAttrib = glGetAttribLocation (Shader.getShaderProg ()) "vertex" in
+    glEnableVertexAttribArray vertexPositionAttrib; (** layout (location = 0) in vec4 vertex *)
+    glVertexAttribPointerOfs32 vertexPositionAttrib 4 GL_FLOAT  false 4 0;
+
+    (* Unbinding *)
+    glBindVertexArray 0;
+    glUnbindBuffer GL_ARRAY_BUFFER
+
+  let drawSprite ~texture2D ~position:((x,y,z) ) ~size:((s_x,s_y)) ~angle ~color =
+    (* TODO : Wrap shader *)
+    Shader.use ();
+
+    let tmp = (Ogl_matrix.get_identity()) in
+    Ogl_matrix.matrix_translate (x,y,z) tmp;
+
+    (* Moving origin of location to center for rotation *)
+    Ogl_matrix.matrix_translate (0.5*. s_x, 0.5 *. s_y,0.0) tmp;
+
+    let angle_matrix = Ogl_matrix.z_rotation_matrix angle in 
+
+    let tmp = Ogl_matrix.mult_matrix tmp angle_matrix in 
+    (* Moving back the origin *)
+
+    Ogl_matrix.matrix_translate (-0.5*. s_x, -0.5 *. s_y,0.0) tmp;
+
+    let model = Ogl_matrix.mult_matrix tmp (Ogl_matrix.scale_matrix (s_x,s_y,1.0))  in (** Maybe the wrong order*)
+    
+    (* checkError(); *)
+    Shader.setMatrix4 "model" model;
+    Shader.setVector4 "spriteColor" color;
+
+    glActiveTexture(GL_TEXTURE0);
+    (* glActiveTexture(GL_TEXTURE2); *)
+    ResourceManager.bind_texture texture2D;
+
+    glBindVertexArray !vao;
+    
+    glDrawArrays GL_TRIANGLES 0 6;
+    glBindVertexArray 0;
+end;;
+
+module Camera = 
+struct
+  let projection = Ogl_matrix.ortho_projection 0.0 (float width) (float height) 0.0 (-1.0) 1.0
+  let init() = 
+    Shader.setMatrix4 "projection" projection
+
+end
+
+type transform = 
 {
-    colour = vec4(aPos,0.1);
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
-    texCoord = texturePos;
-}";;
-
-(* FRAGMENT SHADER *)
-let fragmentShaderSource = "
-#version 330 core
-in vec4 colour;
-in vec2 texCoord;
-
-out vec4 FragColor;
-
-uniform sampler2D ourTexture;
-
-void main()
-{
-    FragColor = texture(ourTexture,texCoord);
-} ";;
-
-init();;
-windowHint ~hint:ContextVersionMajor ~value:3;;
-windowHint ~hint:ContextVersionMinor ~value:3;;
-windowHint ~hint:OpenGLProfile ~value:CoreProfile;;
-let rad deg = Float.pi*.180.0 *. deg;;
+  position : float*float*float;
+  scale : float*float;
+  rotation : float;
+};;
 
 
+class animation (textures) (loop)= 
+object(self)
+  val textures : texture2D list = textures
+  val mutable texturesFlow : texture2D list = []
+  val mutable speed : float = 1.0
+  val mutable counter = 0.0
+  val color = [|1.0;1.0;1.0;1.0|] 
+  val loop = loop
+  
+  method get_color () = color
+  method set_speed s = speed<- s
+  method drawCurrentFrame (transform) = 
+  counter <- (counter +. dt());
+  let textureMatch  = 
+    if (counter < speed) then begin
+    List.hd texturesFlow 
+    end
+    else
+    begin
+    counter <- 0.0;
+    match texturesFlow with
+      |[] -> failwith "Animation : No datas !"
+      |a::[] -> if loop then begin texturesFlow <- textures end;a
+      |h::t -> texturesFlow <- t; h 
+    end 
+      in
+  let s = 
+  (* let (h,w) = textureMatch.size in 
+  print_float counter;
+  print_newline(); *)
+    let ((x,y),(sx,sy))  = (textureMatch.size, transform.scale) in 
+    ((float x)*.sx,(float y)*.sy) in
+  SpriteRenderer.drawSprite 
+  textureMatch
+  transform.position
+  s
+  transform.rotation
+  color;
+  
+  (* c'est dla merde lol *)
+  initializer texturesFlow <- textures
+end
+class spriteRenderer (animations) = 
+object(self)
+  val animations : (string * animation) list = animations
+  val mutable currentAnimation : animation = (new animation [] true)
+  method set_animation name = currentAnimation <- (List.assoc name) animations
+  method draw transform = 
+  (* print_float (dt()); *) 
+    (currentAnimation)#drawCurrentFrame transform
+  
+  initializer begin let _,a = List.hd animations in currentAnimation <- a end
+
+end
+(* Load images *)
 
 
+(* TESTING OPENGL, NOT FINAL CODE *)
+  let renderObject renders = 
+    glClearColor ~r:0.5 ~g:0.5 ~b:0.5 ~a:1.0;
+    glClear ~mask: [GL_COLOR_BUFFER_BIT; GL_DEPTH_BUFFER_BIT];
+    glEnable (GL_DEPTH_TEST);
+    let trans = {
+      position = 10.0, 10.0, 0.0;
+      scale = 1.0,1.0;
+      rotation = 10.0;
 
+         } in
+    List.iter (fun e -> e#draw trans) renders
+  (* For each gameObject do "that function" *)
+  (* render1#update();; *)
+    (* List.iteri (fun i texture ->
 
-let window = GLFW.createWindow ~width:width ~height:height ~title:"My Game" ();;
-let frame_buffer_size_callback = fun window width height -> glViewport ~x:0 ~y:0 ~width:width ~height:height;;
-
-makeContextCurrent ~window:(Some window) ;;
-setFramebufferSizeCallback ~window:window ~f:(Option.Some(frame_buffer_size_callback));;
-
-glViewport ~x:0 ~y:0 ~height:height ~width:width;;
-
-let vertexShader = glCreateShader ~shader_type:GL_VERTEX_SHADER;;
-glShaderSource ~shader:vertexShader vertexShaderSource;;
-glCompileShader ~shader:vertexShader;;
-if glGetShaderCompileStatus ~shader:vertexShader then () else print_endline "vertex shader compilation failed";;
-print_endline (glGetShaderInfoLog ~shader:vertexShader);;
-
-let fragmentShader = glCreateShader ~shader_type:GL_FRAGMENT_SHADER;;
-glShaderSource ~shader:fragmentShader fragmentShaderSource;;
-glCompileShader ~shader:fragmentShader;;
-if glGetShaderCompileStatus ~shader:fragmentShader then () else print_endline "fragment shader compilation failed";;
-
-(* shaderProgram, which is the linking of all shaders previously defined*)
-let shaderProgram = glCreateProgram();;
-glAttachShader ~program:shaderProgram ~shader:vertexShader;;
-glAttachShader ~program:shaderProgram ~shader:fragmentShader;;
-glLinkProgram ~program:shaderProgram;;
-glUseProgram ~program:shaderProgram;;
-(* deleting shaders, dont need anymore *)
-glDeleteShader~shader:vertexShader;;
-glDeleteShader~shader:fragmentShader;;
-
-(* let triangle_verticies = Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout 9;;
-triangle_verticies.{0}<- -0.5;;
-triangle_verticies.{1}<- -0.5;;
-triangle_verticies.{2}<- 0.0;;
-triangle_verticies.{3}<- 0.5;;
-triangle_verticies.{4}<- -0.5;;
-triangle_verticies.{5}<- 0.0;;
-triangle_verticies.{6}<- 0.0;;
-triangle_verticies.{7}<- 0.5;;
-triangle_verticies.{8}<- 0.0;; *)
-
-let cube_verticies = Bigarray.Array1.of_array Bigarray.float32 Bigarray.c_layout [|
-
-    (* triangle coord *)(** texture coord *)
-    -0.5; -0.5; -0.5;  0.0; 0.0;
-     0.5; -0.5; -0.5;  1.0; 0.0;
-     0.5;  0.5; -0.5;  1.0; 1.0;
-     0.5;  0.5; -0.5;  1.0; 1.0;
-    -0.5;  0.5; -0.5;  0.0; 1.0;
-    -0.5; -0.5; -0.5;  0.0; 0.0;
-
-    -0.5; -0.5;  0.5;  0.0; 0.0;
-     0.5; -0.5;  0.5;  1.0; 0.0;
-     0.5;  0.5;  0.5;  1.0; 1.0;
-     0.5;  0.5;  0.5;  1.0; 1.0;
-    -0.5;  0.5;  0.5;  0.0; 1.0;
-    -0.5; -0.5;  0.5;  0.0; 0.0;
-
-    -0.5;  0.5;  0.5;  1.0; 0.0;
-    -0.5;  0.5; -0.5;  1.0; 1.0;
-    -0.5; -0.5; -0.5;  0.0; 1.0;
-    -0.5; -0.5; -0.5;  0.0; 1.0;
-    -0.5; -0.5;  0.5;  0.0; 0.0;
-    -0.5;  0.5;  0.5;  1.0; 0.0;
-
-     0.5;  0.5;  0.5;  1.0; 0.0;
-     0.5;  0.5; -0.5;  1.0; 1.0;
-     0.5; -0.5; -0.5;  0.0; 1.0;
-     0.5; -0.5; -0.5;  0.0; 1.0;
-     0.5; -0.5;  0.5;  0.0; 0.0;
-     0.5;  0.5;  0.5;  1.0; 0.0;
-
-    -0.5; -0.5; -0.5;  0.0; 1.0;
-     0.5; -0.5; -0.5;  1.0; 1.0;
-     0.5; -0.5;  0.5;  1.0; 0.0;
-     0.5; -0.5;  0.5;  1.0; 0.0;
-    -0.5; -0.5;  0.5;  0.0; 0.0;
-    -0.5; -0.5; -0.5;  0.0; 1.0;
-
-    -0.5;  0.5; -0.5;  0.0; 1.0;
-     0.5;  0.5; -0.5;  1.0; 1.0;
-     0.5;  0.5;  0.5;  1.0; 0.0;
-     0.5;  0.5;  0.5;  1.0; 0.0;
-    -0.5;  0.5;  0.5;  0.0; 0.0;
-    -0.5;  0.5; -0.5;  0.0; 1.0
-|];;
-let triangle_verticies = Bigarray.Array1.of_array Bigarray.float32 Bigarray.c_layout [|
-  (* position *)    (* texture coords *)
-  0.5; 0.5; 0.0;      1.0;1.0;
-  0.5; -0.5; 0.0;     1.0;0.0;
-  -0.5; -0.5; 0.0;    0.0;0.0;
-  -0.5; 0.5; 0.0;     0.0;1.0;
-|];;
-let triangle_indices = Bigarray.Array1.of_array Bigarray.int32 Bigarray.c_layout (
-    Array.map Int32.of_int [|
-  0;1;3;
-  1;2;3
-|]);;
-
-(* TEXTURE *)
-
-let texture_id = glGenTexture ();;
-glBindTexture2D texture_id;;
-glTexParameter GL_TEXTURE_2D  (TexParam.GL_TEXTURE_MAG_FILTER  Mag.GL_NEAREST);;
-glTexParameter GL_TEXTURE_2D  (TexParam.GL_TEXTURE_MIN_FILTER  Min.GL_NEAREST);;
-glTexParameter GL_TEXTURE_2D  (TexParam.GL_TEXTURE_WRAP_S  GL_REPEAT);;
-glTexParameter GL_TEXTURE_2D  (TexParam.GL_TEXTURE_WRAP_T  GL_REPEAT);;
-(* todo : generate mipmap *)
-(* Loading image *)
-let filename = "res/container.jpg";;
-let texture, t_width, t_height, internal_format, pixel_data_format = Jpeg_loader.load_img (Filename filename);;
-glTexImage2D GL_TEXTURE_2D 0 GL_RGB t_width t_height GL_RGB GL_UNSIGNED_BYTE texture;;
+      let (w,h) = texture.size in
+      SpriteRenderer.drawSprite  texture (300.0,200.0,1.0*.(float i)) (500.0,500.0) (float (i+1)  *. 45.0) [|1.0;1.0;1.0;1.0|]
+    
+    )[ResourceManager.load_texture_from_file "res/chara/Sprite-0001.jpg";ResourceManager.load_texture_from_file "res/chara/Sprite-0002.jpg"]
+ *)
 
 
 let processIntput window = 
@@ -324,130 +344,65 @@ let processIntput window =
   | true -> setWindowShouldClose ~window:window ~b:true
   |_ -> ();;
 
-let vao = glGenVertexArray ();;
-let vbo = glGenBuffer ();;
-let ebo = glGenBuffer ();;
-
-glBindVertexArray vao;;
-
-glBindBuffer ~target:GL_ARRAY_BUFFER ~vbo:vbo;;
-glBufferData ~target: GL_ARRAY_BUFFER ~size:( ba_sizeof cube_verticies) ~usage:GL_STATIC_DRAW ~data: cube_verticies;;
-
-glBindBuffer GL_ELEMENT_ARRAY_BUFFER ebo;
-glBufferData GL_ELEMENT_ARRAY_BUFFER (ba_sizeof triangle_indices) triangle_indices GL_STATIC_DRAW;;
-
-
-let vertexPositionAttrib = glGetAttribLocation shaderProgram "aPos";;
-let vertexColorAttrib = glGetAttribLocation shaderProgram "myColour" ;;
-let vertexTextPosAttrib = glGetAttribLocation shaderProgram "texturePos" ;;
-
-let modelMatrixUnif = glGetUniformLocation shaderProgram "model" ;;
-let viewMatrixUnif = glGetUniformLocation shaderProgram "view" ;;
-let projectionMatrixUnif = glGetUniformLocation shaderProgram "projection" ;;
-
-
-
-
-(* Multiple cube *)
-let cube_position = 
-(* 10 cube positions *)
-[
-  (0.0,0.0,0.0);
-  (2.0,5.0,-15.0);
-  (2.0,5.0,-15.0);
-  (-1.5, -2.2, -2.5);  
-  (-3.8, -2.0, -12.3);  
-  ( 2.4, -0.4, -3.5);  
-  (-1.7,  3.0, -7.5);  
-  ( 1.3, -2.0, -2.5);  
-  ( 1.5,  2.0, -2.5); 
-  ( 1.5,  0.2, -1.5); 
-  (-1.3,  1.0, -1.5) 
-
-
- ];;
-
-(* AttribPointer *)
-glVertexAttribPointerOfs32 vertexPositionAttrib 3 GL_FLOAT false 5 0 ;; 
-glEnableVertexAttribArray vertexPositionAttrib;;
-glVertexAttribPointerOfs32 vertexTextPosAttrib 2 GL_FLOAT false 5 3;;
-glEnableVertexAttribArray vertexTextPosAttrib;;
-(* glVertexAttribPointerOfs32 vertexColorAttrib 3 GL_FLOAT false 6 3;;
-glEnableVertexAttribArray vertexColorAttrib;; *)
-(* unbind ? *)
-(* glBindBuffer ~target:GL_ARRAY_BUFFER ;; *)
-
-(* unbind vao, cause we are done with it *)
-(* glPolygonMode GL_FRONT_AND_BACK GL_LINE ;; *)
-glBindVertexArray 0;;
-glEnable GL_DEPTH_TEST;;
-
-let loop = 
-
-while (not (GLFW.windowShouldClose ~window:window)) do 
-  (* input *)
-  processIntput window;
-
-  (* rendering *)
-  glClearColor ~r:0.2 ~g:0.3 ~b:0.3 ~a:1.0;
-  glClear ~mask: [GL_COLOR_BUFFER_BIT; GL_DEPTH_BUFFER_BIT];
-  glEnable (GL_DEPTH_TEST);  
-  let offset_attrib_location = glGetUniformLocation shaderProgram "x_offset" in
-  glUniform1f offset_attrib_location 0.0 ;
-
+let rec gameLoop (last_time: float) (dt_cumulator:float) window render : unit= 
+  let t = Unix.gettimeofday() in
+  dt_ref := (t -. last_time);
   
 
-  (* drawing triangle *)
-  glUseProgram shaderProgram ;
-  (* glBindTexture2D texture_id; *)
 
+  processIntput window;
 
-  (* vertex Tranformation *)
-  (* Matrix test *)
-(* let tranform_matrix =  (Matrix.rotation_matrix_of_axis (0.0,0.0,1.0) 1.57) ;; *)
-  let model_matrix = Matrix.rotation_matrix_of_axis  (1.0,0.0,0.0) (rad (-. 55.0)) in
+  (* Updating game state *)
+  
+  (* rendering *)
+  renderObject [render];
+  (* checkError(); *)
 
-  let view_matrix =  Ogl_matrix.translation_matrix (0.0,0.0,-3.0) in
-  (* print_float view_matrix.(1) ; 
-  print_newline (); *)
-  (* let view_matrix = view_matrix |>Matrix.rotate (1.0,5.0,-5.0) (rad (-. 55.0))  in
-  print_float view_matrix.(1);
-  print_newline (); *)
-
-  let perspective_projection_matrix = Matrix.perspective_projection (45.0) (float_of_int width/. float_of_int height) 0.1 100.0 in
-    
-  glUniformMatrix4fv viewMatrixUnif 1 false view_matrix;
-  glUniformMatrix4fv projectionMatrixUnif 1 false perspective_projection_matrix;
-
-  glBindVertexArray vao;
-  List.iteri
-  (
-    fun  i position->
-      let speed = 100.0 in
-      let trans = Ogl_matrix.translation_matrix position in 
-
-      let y = Ogl_matrix.y_rotation_matrix ((float i) *. Sys.time() *.speed) in
-      let x = Ogl_matrix.x_rotation_matrix (float ((i )) *. Sys.time()*.speed) in
-      let z = Ogl_matrix.x_rotation_matrix (float i *. Sys.time()*.speed) in
-
-      let t = mult_matrix x (mult_matrix y z) in
-      let tmp = Ogl_matrix.mult_matrix trans t in
-
-      
-      glUniformMatrix4fv modelMatrixUnif 1 false tmp;
-      glDrawArrays ~mode:GL_TRIANGLES ~first:0 ~count:36;
-      
-  )
-  cube_position;
-  checkError ();
-  (* glDrawElements0 GL_TRIANGLES (Bigarray.Array1.dim triangle_indices) GL_UNSIGNED_INT ; *)
-
-
-  swapBuffers ~window:window;
+  swapBuffers window;
   pollEvents();
-done;
-glDeleteVertexArray vao ;
-glDeleteBuffer ~vbo:vbo;
-terminate();
-;;
-loop;;
+
+
+  if  not (windowShouldClose (window) )then
+  begin
+    (* print_float (Unix.gettimeofday());
+    print_newline(); *)
+    gameLoop ( t) (dt_cumulator +. dt()) window render
+  end
+  else ()
+
+  let test ()= 
+  
+    Window.glfw_init ();
+    let window = Window.glfw_instanciate_window height width "The Game" in
+    Shader.init();
+    Camera.init();
+    SpriteRenderer.initRenderData();
+    glEnable GL_BLEND;
+    glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA;  
+    glEnable (GL_DEPTH_TEST);
+
+    let textures = 
+    let e1 = ResourceManager.load_texture_from_file "res/chara/Sprite-0001.jpg"  in 
+    let e2 = ResourceManager.load_texture_from_file "res/chara/Sprite-0002.jpg"  in 
+    let e3 = ResourceManager.load_texture_from_file "res/chara/Sprite-0003.jpg"  in 
+    let e4 = ResourceManager.load_texture_from_file "res/chara/Sprite-0004.jpg"  in 
+    [e1;e2;e3;e4]in
+    let anim1 = new animation textures true in
+    let render1 = new spriteRenderer [("idle",anim1)] in
+    
+    (* ResourceManager.load_texture_from_file "res/megaman.jpg" |> ResourceManager.addTexture;
+    ResourceManager.load_texture_from_file "res/container.jpg" |> ResourceManager.addTexture; *)
+
+    (* GAME LOOP *)
+    glPolygonMode GL_FRONT_AND_BACK GL_FILL ;
+    gameLoop 0. 0. window render1;
+    
+
+
+    terminate();;
+
+
+    
+
+
+test ();;

@@ -5,16 +5,21 @@ PKG = glMLite,glMLite.glut,tsdl,glMLite.vbo,glMLite.vertex_arrays,glfw-ocaml,glM
 
 all: ogl_matrix
 	cd src/Render ; \
-	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx render.ml ;\
+	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx tuto.ml ;\
 
 
 gl: ogl_matrix
 	cd src/Render ; \
-	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx renderer.ml
+	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx render.ml
 
 test: ogl_matrix
 	cd src/Render ; \
 	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx test.ml
+
+cube:
+	cd src/Render ; \
+	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) cube.ml
+
 
 ogl_matrix: 
 	cd src/Render ; \
