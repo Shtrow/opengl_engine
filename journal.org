@@ -49,9 +49,21 @@
 
 * <20/01/2020>
 ** Fait:
-* Affichage des objets
+** Affichage des objets
 ** A faire:
-* Ajouter les nouvautés dans la branche master
-* Travailler en binôme
-* Ajouter un fichier README qui explique comme compiler 
-* et executer le code
+** Ajouter les nouveautés dans la branche master
+** Travailler en binôme
+** Ajouter un fichier README qui explique comme compiler 
+** et executer le code
+
+* <28/01/2020>
+
+** DONE
+   base de jeu
+   graphisme 
+
+** TODO
+   combiner la base du jeu et le graphisme
+   ajouter un fichier README pour comment compiler et exécuter le code
+   Niveau 0 = possibilité de jouer en mode console -> démo
+   
