@@ -99,7 +99,7 @@ struct
     match format with 
     | ".jpeg" | ".jpg" -> 
       Jpeg_loader.load_img (Filename path) 
-    | ".png" -> failwith "png is not supported yet"
+    | ".png" -> Png_loader.load_img(Filename path)
     | _ -> failwith "unkmown format"
       in
     generate_texture s 
@@ -323,7 +323,7 @@ end
     glEnable (GL_DEPTH_TEST);
     let trans = {
       position = 10.0, 10.0, 0.0;
-      scale = 1.0,1.0;
+      scale = 5.0,5.0;
       rotation = 10.0;
 
          } in
@@ -382,7 +382,7 @@ let rec gameLoop (last_time: float) (dt_cumulator:float) window render : unit=
     glEnable (GL_DEPTH_TEST);
 
     let textures = 
-    let e1 = ResourceManager.load_texture_from_file "res/chara/Sprite-0001.jpg"  in 
+    let e1 = ResourceManager.load_texture_from_file "res/chara/Sprite-0003.jpg"  in 
     let e2 = ResourceManager.load_texture_from_file "res/chara/Sprite-0002.jpg"  in 
     let e3 = ResourceManager.load_texture_from_file "res/chara/Sprite-0003.jpg"  in 
     let e4 = ResourceManager.load_texture_from_file "res/chara/Sprite-0004.jpg"  in 

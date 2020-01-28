@@ -1,7 +1,7 @@
 # FLAGS = 
 EXEC = ../../bin/game
 EXEC2 = bin/game
-PKG = glMLite,glMLite.glut,tsdl,glMLite.vbo,glMLite.vertex_arrays,glfw-ocaml,glMLite.jpeg_loader,
+PKG = glMLite,glMLite.glut,tsdl,glMLite.vbo,glMLite.vertex_arrays,glfw-ocaml,glMLite.jpeg_loader,glMLite.png_loader,
 
 all: ogl_matrix
 	cd src/Render ; \
