@@ -1,9 +1,7 @@
 open GL
 open VertArray
 open VBO
-open Tsdl
 open GLFW
-open Glut
 open Ogl_matrix
 
 type window = GLFW.window
@@ -83,7 +81,7 @@ struct
     tex
 
   let bind_texture texture = 
-    glBindTexture2D texture.id;;
+    glBindTexture2D texture.id
 
   let load_texture_from_file path = 
     let format = Filename.extension path in 
@@ -195,7 +193,7 @@ struct
 
     
     let vertexPositionAttrib = glGetAttribLocation (Shader.getShaderProg ()) "vertex" in
-    glEnableVertexAttribArray vertexPositionAttrib; (** layout (location = 0) in vec4 vertex *)
+    glEnableVertexAttribArray vertexPositionAttrib; (* layout (location = 0) in vec4 vertex *)
     glVertexAttribPointerOfs32 vertexPositionAttrib 4 GL_FLOAT  false 4 0;
 
     (* Unbinding *)
@@ -219,7 +217,7 @@ struct
 
     Ogl_matrix.matrix_translate (-0.5*. s_x, -0.5 *. s_y,0.0) tmp;
 
-    let model = Ogl_matrix.mult_matrix tmp (Ogl_matrix.scale_matrix (s_x,s_y,1.0))  in (** Maybe the wrong order*)
+    let model = Ogl_matrix.mult_matrix tmp (Ogl_matrix.scale_matrix (s_x,s_y,1.0))  in (* Maybe the wrong order*)
     
     (* checkError(); *)
     Shader.setMatrix4 "model" model;
