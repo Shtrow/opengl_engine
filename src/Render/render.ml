@@ -6,23 +6,15 @@ open GLFW
 open Glut
 open Ogl_matrix
 
+type window = GLFW.window
+
 let width = 800
 let height = 600
-let dt_ref = ref 0.0;;
 
+let dt_ref = ref 0.0;;
+(* TODO : Link "dt" from Engine *)
 let dt () = !dt_ref;;
 
-let framerate = 1.;;
-let checkError () = let e = (glGetError()) in
-match e with
-| GL.GL_NO_ERROR -> print_string "NO ERROR"
-| GL.GL_INVALID_ENUM -> failwith "1"
-| GL.GL_INVALID_VALUE -> failwith "2"
-| GL.GL_INVALID_OPERATION -> failwith "3"
-| GL.GL_STACK_OVERFLOW -> failwith "4"
-| GL.GL_STACK_UNDERFLOW -> failwith "5"
-| GL.GL_OUT_OF_MEMORY -> failwith "6"
-| GL.GL_TABLE_TOO_LARGE -> failwith "7";;
 
 module Window =
 struct
@@ -251,6 +243,7 @@ struct
 
 end
 
+(* TODO : put transform somewhere else *)
 type transform = 
 {
   position : float*float*float;
@@ -263,19 +256,18 @@ class animation (textures) (loop)=
 object(self)
   val textures : texture2D list = textures
   val mutable texturesFlow : texture2D list = []
-  val mutable speed : float = 1.0
+  val mutable speed : float = 0.5
   val mutable counter = 0.0
   val color = [|1.0;1.0;1.0;1.0|] 
   val loop = loop
-  
+  method is_finished ()  = List.length texturesFlow = 1
+  method rewind () = texturesFlow <- textures
   method get_color () = color
   method set_speed s = speed<- s
   method drawCurrentFrame (transform) = 
   counter <- (counter +. dt());
   let textureMatch  = 
-    if (counter < speed) then begin
-    List.hd texturesFlow 
-    end
+    if (counter < speed) then List.hd texturesFlow 
     else
     begin
     counter <- 0.0;
@@ -286,22 +278,17 @@ object(self)
     end 
       in
   let s = 
-  (* let (h,w) = textureMatch.size in 
-  print_float counter;
-  print_newline(); *)
     let ((x,y),(sx,sy))  = (textureMatch.size, transform.scale) in 
     ((float x)*.sx,(float y)*.sy) in
-  SpriteRenderer.drawSprite 
-  textureMatch
-  transform.position
-  s
-  transform.rotation
-  color;
-  
-  (* c'est dla merde lol *)
+    SpriteRenderer.drawSprite 
+    textureMatch
+    transform.position
+    s
+    transform.rotation
+    color;
   initializer texturesFlow <- textures
 end
-class spriteRenderer (animations) = 
+class animRenderer (animations) = 
 object(self)
   val animations : (string * animation) list = animations
   val mutable currentAnimation : animation = (new animation [] true)
@@ -313,65 +300,8 @@ object(self)
   initializer begin let _,a = List.hd animations in currentAnimation <- a end
 
 end
-(* Load images *)
+let init_graphic () = 
 
-
-(* TESTING OPENGL, NOT FINAL CODE *)
-  let renderObject renders = 
-    glClearColor ~r:0.5 ~g:0.5 ~b:0.5 ~a:1.0;
-    glClear ~mask: [GL_COLOR_BUFFER_BIT; GL_DEPTH_BUFFER_BIT];
-    glEnable (GL_DEPTH_TEST);
-    let trans = {
-      position = 10.0, 10.0, 0.0;
-      scale = 5.0,5.0;
-      rotation = 10.0;
-
-         } in
-    List.iter (fun e -> e#draw trans) renders
-  (* For each gameObject do "that function" *)
-  (* render1#update();; *)
-    (* List.iteri (fun i texture ->
-
-      let (w,h) = texture.size in
-      SpriteRenderer.drawSprite  texture (300.0,200.0,1.0*.(float i)) (500.0,500.0) (float (i+1)  *. 45.0) [|1.0;1.0;1.0;1.0|]
-    
-    )[ResourceManager.load_texture_from_file "res/chara/Sprite-0001.jpg";ResourceManager.load_texture_from_file "res/chara/Sprite-0002.jpg"]
- *)
-
-
-let processIntput window = 
-  match getKey~window:window ~key:Escape with
-  | true -> setWindowShouldClose ~window:window ~b:true
-  |_ -> ();;
-
-let rec gameLoop (last_time: float) (dt_cumulator:float) window render : unit= 
-  let t = Unix.gettimeofday() in
-  dt_ref := (t -. last_time);
-  
-
-
-  processIntput window;
-
-  (* Updating game state *)
-  
-  (* rendering *)
-  renderObject [render];
-  (* checkError(); *)
-
-  swapBuffers window;
-  pollEvents();
-
-
-  if  not (windowShouldClose (window) )then
-  begin
-    (* print_float (Unix.gettimeofday());
-    print_newline(); *)
-    gameLoop ( t) (dt_cumulator +. dt()) window render
-  end
-  else ()
-
-  let test ()= 
-  
     Window.glfw_init ();
     let window = Window.glfw_instanciate_window height width "The Game" in
     Shader.init();
@@ -380,29 +310,4 @@ let rec gameLoop (last_time: float) (dt_cumulator:float) window render : unit=
     glEnable GL_BLEND;
     glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA;  
     glEnable (GL_DEPTH_TEST);
-
-    let textures = 
-    let e1 = ResourceManager.load_texture_from_file "res/chara/Sprite-0003.jpg"  in 
-    let e2 = ResourceManager.load_texture_from_file "res/chara/Sprite-0002.jpg"  in 
-    let e3 = ResourceManager.load_texture_from_file "res/chara/Sprite-0003.jpg"  in 
-    let e4 = ResourceManager.load_texture_from_file "res/chara/Sprite-0004.jpg"  in 
-    [e1;e2;e3;e4]in
-    let anim1 = new animation textures true in
-    let render1 = new spriteRenderer [("idle",anim1)] in
-    
-    (* ResourceManager.load_texture_from_file "res/megaman.jpg" |> ResourceManager.addTexture;
-    ResourceManager.load_texture_from_file "res/container.jpg" |> ResourceManager.addTexture; *)
-
-    (* GAME LOOP *)
-    glPolygonMode GL_FRONT_AND_BACK GL_FILL ;
-    gameLoop 0. 0. window render1;
-    
-
-
-    terminate();;
-
-
-    
-
-
-test ();;
+    window

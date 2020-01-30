@@ -1,27 +1,3 @@
-# FLAGS = 
-EXEC = ../../bin/game
-EXEC2 = bin/game
-PKG = glMLite,glMLite.glut,tsdl,glMLite.vbo,glMLite.vertex_arrays,glfw-ocaml,glMLite.jpeg_loader,glMLite.png_loader,
-
-all: ogl_matrix
-	cd src/Render ; \
-	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx tuto.ml ;\
-
-
-gl: ogl_matrix
-	cd src/Render ; \
-	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx render.ml
-
-test: ogl_matrix
-	cd src/Render ; \
-	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) ogl_matrix.cmx test.ml
-
-cube:
-	cd src/Render ; \
-	ocamlfind ocamlopt -o $(EXEC) -linkpkg -package $(PKG) cube.ml
-
-
-ogl_matrix: 
-	cd src/Render ; \
-	ocamlopt ogl_matrix.mli ; \
-	ocamlopt ogl_matrix.ml
+CC = ocamlc
+FLAGS = -I
+LIBS = +glMLite  GL.cma Glut.cma
