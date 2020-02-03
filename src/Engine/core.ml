@@ -2,6 +2,9 @@ type rectangle = {height : int ; width : int}
 type position = {x : int ; y : int}
 type scale = {factor_height : int ; factor_width : int}
 
+let dt_ref = ref 0.0;;
+let dt () = !dt_ref;;
+
 class entity  (components : component list)= 
   object(self)
     val mutable components : component list = components

@@ -1,6 +1,8 @@
 type rectangle = {height : int ; width : int}
-type position = {x : int ; y : int}
-type scale = {factor_height : int ; factor_width : int}
+
+val dt : unit -> float
+(* temporary *)
+val dt_ref: float ref
 
 class entity  : component list ->
   object

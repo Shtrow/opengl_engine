@@ -2,18 +2,13 @@ open GL
 open VertArray
 open VBO
 open GLFW
-open Ogl_matrix
+open Math
 
 type window = GLFW.window
 
 let width = 800
 let height = 600
-
-let dt_ref = ref 0.0;;
-(* TODO : Link "dt" from Engine *)
-let dt () = !dt_ref;;
-
-
+let dt () = Core.dt ()
 module Window =
 struct
 
@@ -241,8 +236,7 @@ struct
 
 end
 
-(* TODO : put transform somewhere else *)
-type transform = 
+type spriteCoord = 
 {
   position : float*float*float;
   scale : float*float;
@@ -262,7 +256,7 @@ object(self)
   method rewind () = texturesFlow <- textures
   method get_color () = color
   method set_speed s = speed<- s
-  method drawCurrentFrame (transform) = 
+  method drawCurrentFrame (spriteCoord) = 
   counter <- (counter +. dt());
   let textureMatch  = 
     if (counter < speed) then List.hd texturesFlow 
@@ -276,13 +270,13 @@ object(self)
     end 
       in
   let s = 
-    let ((x,y),(sx,sy))  = (textureMatch.size, transform.scale) in 
+    let ((x,y),(sx,sy))  = (textureMatch.size, spriteCoord.scale) in 
     ((float x)*.sx,(float y)*.sy) in
     SpriteRenderer.drawSprite 
     textureMatch
-    transform.position
+    spriteCoord.position
     s
-    transform.rotation
+    spriteCoord.rotation
     color;
   initializer texturesFlow <- textures
 end
@@ -291,9 +285,9 @@ object(self)
   val animations : (string * animation) list = animations
   val mutable currentAnimation : animation = (new animation [] true)
   method set_animation name = currentAnimation <- (List.assoc name) animations
-  method draw transform = 
+  method draw spriteCoord = 
   (* print_float (dt()); *) 
-    (currentAnimation)#drawCurrentFrame transform
+    (currentAnimation)#drawCurrentFrame spriteCoord
   
   initializer begin let _,a = List.hd animations in currentAnimation <- a end
 
@@ -309,3 +303,7 @@ let init_graphic () =
     glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA;  
     glEnable (GL_DEPTH_TEST);
     window
+
+let update_graphic window = 
+    swapBuffers window;
+    pollEvents();

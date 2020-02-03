@@ -1,6 +1,11 @@
 type texture2D
-type transform
-type window
+type spriteCoord = 
+{
+  position : float*float*float;
+  scale : float*float;
+  rotation : float;
+}
+type window =  GLFW.window
 
 val width : int
 val height : int
@@ -27,7 +32,7 @@ object
   method rewind : unit -> unit
   method get_color : unit -> float array
   method set_speed : float -> unit
-  method drawCurrentFrame : transform -> unit
+  method drawCurrentFrame : spriteCoord -> unit
 end
 
 
@@ -36,7 +41,8 @@ object
   val animations : (string * animation) list
   val mutable currentAnimation : animation
   method set_animation : string -> unit
-  method draw : transform -> unit
+  method draw : spriteCoord -> unit
 end
 
 val init_graphic : unit -> window
+val update_graphic : window ->unit
