@@ -18,8 +18,11 @@ u1-.v1,u2-.v2
 let (+) (u1,u2) (v1,v2) = 
 u1+.v1,u2+.v2
 
-let mul (u1,u2) scalar = 
+let mul_scalar (u1,u2) scalar = 
 u1*.scalar,u2*.scalar
+
+let mul (u1,u2) (v1,v2) = 
+  u1*.v1,u2*.v2
 
 let degree_to_vector angle= 
 let angle = rad_to_degree angle in

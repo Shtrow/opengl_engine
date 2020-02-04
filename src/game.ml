@@ -2,10 +2,9 @@ open Engine
 open Render
 open GLFW
 open GL
-open Engine
+open Player
 
 let window = init_graphic ();;
-let d = Terrain.create_land 5 5;;
 
 
 let processInput window = 
@@ -23,10 +22,12 @@ let rec gameLoop  (last_time: float) (dt_cumulator:float) : unit=
     glEnable (GL_DEPTH_TEST);
 
   (* ici on limite le framerate *)
-(Terrain.draw d; 
-update_graphic window;
+  (* Terrain.terrain#get_components *)
+  
 
-gameLoop t 0.0)
+  update_graphic window;
+
+gameLoop t 0.0
 
 ;;
 gameLoop 0. 0.;;

@@ -4,32 +4,32 @@ val dt : unit -> float
 (* temporary *)
 val dt_ref: float ref
 
-class entity  : component list ->
+class entity  :
   object
     val mutable components : component list
+    method set_parent : entity -> unit
     method add_component : component -> unit
-    method get_components : (component list) ref
+    method get_components : (component list)
+    method get_world_transform : Math.Transform.transform
+    method set_transform : Math.Transform.transform -> unit
   end
-and virtual component  : entity ref ->
+and virtual component  : entity ->
   object
-    val mutable _entity : entity ref
-    method get_entity_ref : entity ref
-    method init : unit 
-    method update : unit 
+    val mutable _entity : entity
+    method get_entity : entity
+    method init : unit -> unit
+    method update : unit ->unit
   end
 
-class virtual action : 
-  object 
-    method virtual perform : unit
-  end 
+type action  = unit -> unit
 
-class virtual actor : component list -> int -> action list ->
+class virtual actor : int -> (string *action) list ->
   object
     inherit entity
     val mutable cooldown : int
-    val mutable actions : action list
+    val mutable actions : (string *action)  list
     val mutable is_ready : bool
-    method virtual take_action : unit
+    method virtual take_action : unit -> unit
   end 
 
 class collision_box :  rectangle ->
@@ -37,14 +37,8 @@ class collision_box :  rectangle ->
     val box : rectangle
   end
 
-class transform  : entity ref ->
-  object 
-    inherit component
-    method update : unit
-  end
-
-class scene : entity list ->
+(* class scene : entity list ->
   object
     val mutable entities : entity list
     method sceneUpdate : unit
-  end
+  end *)

@@ -1,5 +1,6 @@
 open Engine.Render
-type case  = animation (* DIM = 16* 16 *)
+open Engine.Core
+open Math.Transform
 
 
 let create_land w h = 
@@ -8,20 +9,33 @@ let create_land w h =
   let grass = new animRenderer [ "grass",grass] in 
   Array.make_matrix w h grass
 
-let print_land  l = 
+let print_land (t) l = 
   Array.iteri ( fun i c ->
     Array.iteri (fun j c1 ->
-      let t = {
-        position = (float i *.32.0,float j *. 32.0, 0.0 );
-        scale = 1.0,1.0;
-        rotation = 1.0;
-      } in
       
       c1#draw t
     ) c
    ) l
-;;
 
 
-let draw d = 
-print_land @@ d ;;
+let draw_t t d = 
+let t = to_sprite_coord t in 
+print_land t d ;;
+
+type case  = animation (* DIM = 16* 16 *)
+
+(* Terraim componnent *)
+let terrain =
+object
+  inherit entity
+end
+
+let terrainRender =
+object(self)
+  inherit component terrain
+  val d : Engine.Render.animRenderer array array = create_land 5 5
+  method init () = let transform = self#get_entity#get_world_transform  in
+  self#get_entity#set_transform @@  Math.Transform.translate transform (100.0, 100.0)
+
+  method update () = draw_t (self#get_entity#get_world_transform) d
+end
