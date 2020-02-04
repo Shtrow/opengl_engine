@@ -67,3 +67,24 @@
    ajouter un fichier README pour comment compiler et exécuter le code
    Niveau 0 = possibilité de jouer en mode console -> démo
    
+* <04/01/2020>
+
+** DONE
+   jeu ASCII
+   
+
+** TODO
+   Faire en sorte que le make marche, voici le message d'erreur
+*************************************
+cd src ;\
+dune build game.exe --profile release ;\
+cd ../ ;\
+ln -sf _build/default/src/game.exe ./game.exe
+font helvetica size 12 not found, trying "fixed"
+check if you can use the "-fn" option
+No such file or directory: build
+*************************************
+   ajouter des informations pour jouer en ASCII
+
+   implémenter les actions de bases (déplacement, pivoter, tirer, poignarder) sans le graphisme
+   améliorer le graphisme
