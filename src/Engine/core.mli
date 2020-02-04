@@ -37,8 +37,8 @@ class collision_box :  rectangle ->
     val box : rectangle
   end
 
-(* class scene : entity list ->
+class scene : entity list ->
   object
     val mutable entities : entity list
-    method sceneUpdate : unit
-  end *)
+    method sceneUpdate : unit -> unit
+  end

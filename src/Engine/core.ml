@@ -46,14 +46,14 @@ class collision_box (box : rectangle)=
     val mutable box : rectangle = box
   end
 
-let iter_on_component_update = List.iter (fun c ->c#update) 
-let iter_on_component_init = List.iter (fun c ->c#init) 
-(* class scene (entities : entity list)  = 
+let iter_on_component_update = List.iter (fun c ->c#update ()) 
+let iter_on_component_init = List.iter (fun c ->c#init ()) 
+class scene (entities : entity list)  = 
   object(self)
     val mutable entities  = entities
     (** TODO : optimiser gameUpdate *)
-    method sceneUpdate = 
-    List.iter ( fun e -> iter_on_component_update (e#get_components ) ) entities
+    method sceneUpdate ()= 
+    List.iter ( fun e -> iter_on_component_update (e#get_components ) ) entities 
     initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities
 )
-  end *)
+  end
