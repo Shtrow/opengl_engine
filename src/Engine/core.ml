@@ -13,8 +13,11 @@ class entity  =
     method set_transform t = transform <- t
     method get_world_transform : transform= 
     match parent with 
-      | Some p -> let p_transform = p#get_world_transform in {transform with position = Math.Vector2.(+) transform.position p_transform.position; angle = transform.angle +. p_transform.angle;
-      scale = mul transform.scale  p_transform.scale }
+      | Some p -> let p_transform = p#get_world_transform in
+       {transform with  angle = transform.angle +. p_transform.angle;
+      scale = mul transform.scale  p_transform.scale; position =
+        Math.Vector2.(+) transform.position p_transform.position
+      }
       | None -> transform
     method set_parent p = parent <- Some p
     method add_component c = 

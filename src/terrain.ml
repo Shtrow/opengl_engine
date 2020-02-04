@@ -1,5 +1,4 @@
 open Engine.Render
-open Engine.Render
 open Engine.Core
 open Math.Transform
 
@@ -14,7 +13,7 @@ let print_land (t: spriteCoord) l =
   Array.iteri ( fun i c ->
     Array.iteri (fun j c1 ->
       let (x,y,z) = t.position in 
-      c1#draw {t with position = let (x,y) = Math.Vector2.(+)  (x,y) (float i *.32.0,float j *. 32.0) in (x,y,z)}
+      c1#draw {t with position = let (x,y) = Math.Vector2.(+)  (x,y) (float i *.32.0,float j *. 32.0) in (x,y,-0.01)}
     ) c
    ) l
 
