@@ -3,14 +3,15 @@ open Math.Vector2
 type rectangle = {height : int ; width : int}
 
 
-let dt_ref = ref 0.0;;
-let dt () = !dt_ref;;
-class entity  = 
+let dt () = Render.dt()
+let update_dt f = (Render.ref_dt) := f
+class entity ?(parent) () = 
   object(self)
     val mutable components : component list = []
     val mutable transform : transform = {position = 0.0,0.0; scale = 1.0,1.0; angle = 0.0; depth = 0.0}
-    val mutable parent : entity option = None
+    val mutable parent : entity option = parent
     method set_transform t = transform <- t
+    method get_transform = transform
     method get_world_transform : transform= 
     match parent with 
       | Some p -> let p_transform = p#get_world_transform in
@@ -35,11 +36,11 @@ and virtual component (entity :  entity )=
 
 type action = unit -> unit
 
-class virtual actor (cd : int) (acts : (string * action) list)= 
+class virtual actor ?parent (cd : int) = 
   object(self)
-    inherit entity
+    
+    inherit entity ?parent:parent ()
     val mutable cooldown = cd
-    val mutable actions =acts
     val mutable is_ready  = false
     method virtual take_action : unit -> unit
   end
@@ -56,7 +57,19 @@ class scene (entities : entity list)  =
     val mutable entities  = entities
     (** TODO : optimiser gameUpdate *)
     method sceneUpdate ()= 
+    Render.clear ();
     List.iter ( fun e -> iter_on_component_update (e#get_components ) ) entities 
     initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities
 )
   end
+
+class virtual renderComponent entity = 
+object(self) 
+  inherit component entity
+  val mutable anim : Render.animRenderer option = None
+  method virtual init : unit -> unit
+  method supply_anim a = 
+    anim <- (Some a)
+  method update () = 
+    (Option.get anim)#draw (Render.to_sprite_coord (self#get_entity#get_world_transform))
+end

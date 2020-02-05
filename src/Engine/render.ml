@@ -3,12 +3,29 @@ open VertArray
 open VBO
 open GLFW
 open Math
+type spriteCoord = 
+{
+  position : float*float*float;
+  scale : float*float;
+  rotation : float;
+}
 
 type window = GLFW.window
 
 let width = 800
 let height = 600
-let dt () = Core.dt ()
+
+let ref_dt = ref 0.0
+let dt () = !ref_dt
+
+let to_sprite_coord (t:Math.Transform.transform) =
+  let (x, y) = t.position in
+  {
+    position = (x,y,t.depth);
+    scale = t.scale;
+    rotation = t.angle;
+  }
+
 module Window =
 struct
 
@@ -236,12 +253,6 @@ struct
 
 end
 
-type spriteCoord = 
-{
-  position : float*float*float;
-  scale : float*float;
-  rotation : float;
-};;
 
 
 class animation (textures) (loop)= 
@@ -285,11 +296,12 @@ object(self)
   val animations : (string * animation) list = animations
   val mutable currentAnimation : animation = (new animation [] true)
   method set_animation name = currentAnimation <- (List.assoc name) animations
+  method get_animation name = (List.assoc name) animations
   method draw spriteCoord = 
   (* print_float (dt()); *) 
     (currentAnimation)#drawCurrentFrame spriteCoord
-  
-  initializer begin let _,a = List.hd animations in currentAnimation <- a end
+  initializer begin let _,a = List.hd animations in currentAnimation <- a 
+end
 
 end
 let init_graphic () = 
@@ -306,4 +318,8 @@ let init_graphic () =
 
 let update_graphic window = 
     swapBuffers window;
-    pollEvents();
+    pollEvents()
+let clear () = 
+  glClearColor ~r:0.5 ~g:0.5 ~b:0.5 ~a:1.0;
+  glClear ~mask: [GL_COLOR_BUFFER_BIT; GL_DEPTH_BUFFER_BIT];
+  glEnable (GL_DEPTH_TEST)

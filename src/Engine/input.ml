@@ -1,6 +1,10 @@
 type key_code = GLFW.key
+let window : GLFW.window option ref = ref None
+let window_in_for_input w = window := Some w
 
-let keyIsDown window k = GLFW.getKey~window:window ~key:k
+let w() = (Option.get !window)
+
+let keyIsDown k = GLFW.getKey~window:(w()) ~key:k
 
 let keyIsPressed k = true
 

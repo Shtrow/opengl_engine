@@ -3,10 +3,10 @@ open Engine.Core
 open Math.Transform
 
 
-let create_land w h = 
+let create_land  w h = 
   let grass = new animation [ResourceManager.load_texture_from_file "res/grass1.png";ResourceManager.load_texture_from_file "res/grass2.png"] true in
   grass#set_speed 10.0;
-  let grass = new animRenderer [ "grass",grass] in 
+  let grass = new animRenderer  [ "grass",grass] in 
   Array.make_matrix w h grass
 
 let print_land (t: spriteCoord) l = 
@@ -26,7 +26,7 @@ type case  = animation (* DIM = 16* 16 *)
 
 let terrain =
 object
-  inherit entity
+  inherit entity ()
 end
 
 let terrainRender =

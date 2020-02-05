@@ -7,8 +7,13 @@ type spriteCoord =
 }
 type window =  GLFW.window
 
+val dt : unit -> float
+val ref_dt: float ref
+
 val width : int
 val height : int
+
+val to_sprite_coord : Math.Transform.transform -> spriteCoord
 
 module ResourceManager : 
 sig
@@ -20,6 +25,7 @@ sig
   val drawSprite : texture2D:texture2D -> position:(float*float*float) -> size:(float * float) -> angle:float -> color:float array -> unit
 end
 
+(* texture list -> loop? -> *)
 class animation : texture2D list -> bool ->
 object
   val textures : texture2D list
@@ -35,14 +41,18 @@ object
   method drawCurrentFrame : spriteCoord -> unit
 end
 
-
-class animRenderer : (string* animation) list ->
+(* Package of animation. Choose which one will be displayed with set_animation *)
+class animRenderer :  (string* animation) list ->
 object
   val animations : (string * animation) list
-  val mutable currentAnimation : animation
+  (* Change current animation from here *)
   method set_animation : string -> unit
-  method draw : spriteCoord -> unit
+  method get_animation : string -> animation
+  (* This update will draw current animation *)
+  method draw : spriteCoord -> unit 
+
 end
 
 val init_graphic : unit -> window
 val update_graphic : window ->unit
+val clear : unit -> unit
