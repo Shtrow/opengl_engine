@@ -1,5 +1,10 @@
 type vector = float * float
 
+let up = (0.0,1.0)
+let down = (0.0,-1.0)
+let left = (-1.0,0.0)
+let right = (1.0,0.0)
+
 let rad_to_degree angle = angle *. (180.0 /. Float.pi)
 
 let lenght (v_x,v_y) = 

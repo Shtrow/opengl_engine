@@ -9,8 +9,23 @@ type spriteCoord =
   scale : float*float;
   rotation : float;
 }
-
+type texture2D = {
+  id : texture_id;
+  size : int * int; (*  height * width *) 
+  wrap_s : wrap_param;
+  wrap_t : wrap_param;
+  filter_Min : Min.min_filter; (*Filtering mode if texture pixels < screen pixels*)
+  filter_Max : Mag.mag_filter; (*Filtering mode if texture pixels > screen pixels*)
+  internal_format : InternalFormat.internal_format ;
+  pixel_data_format : pixel_data_format ; 
+}
 type window = GLFW.window
+let textures : (string* texture2D) list ref= ref []
+
+let textures_data :  ('string *
+ (GL.image_data * int * int * GL.InternalFormat.internal_format *
+  GL.pixel_data_format))
+list ref = ref []
 
 let width = 800
 let height = 600
@@ -48,16 +63,7 @@ let glfw_instanciate_window ~height ~width ~title =
   window
 end
 
-type texture2D = {
-  id : texture_id;
-  size : int * int; (*  height * width *) 
-  wrap_s : wrap_param;
-  wrap_t : wrap_param;
-  filter_Min : Min.min_filter; (*Filtering mode if texture pixels < screen pixels*)
-  filter_Max : Mag.mag_filter; (*Filtering mode if texture pixels > screen pixels*)
-  internal_format : InternalFormat.internal_format ;
-  pixel_data_format : pixel_data_format ; 
-}
+
 module ResourceManager = 
 struct
   (* let texturesBuffer = ref []
@@ -95,7 +101,7 @@ struct
   let bind_texture texture = 
     glBindTexture2D texture.id
 
-  let load_texture_from_file path = 
+  let load_texture_from_file ~name ~path = 
     let format = Filename.extension path in 
     let s = 
     match format with 
@@ -104,7 +110,22 @@ struct
     | ".png" -> Png_loader.load_img(Filename path)
     | _ -> failwith "unkmown format"
       in
-    generate_texture s 
+      textures_data := (name,s)::(!textures_data)
+  
+  let load_textures () = 
+    let t =  
+  ( List.map (fun (name,e) ->
+        (name,(generate_texture e))
+      ) !textures_data)
+    in
+    textures := t
+
+  let get_texture name = 
+  
+    if List.exists (fun (e,t) -> String.equal e name) (!textures) then 
+    List.assoc name !textures
+    else failwith ""
+
 end
 
 module Shader  =

@@ -43,13 +43,11 @@ class virtual actor : ?parent:entity -> int ->
 (* Instance of this component directly draw the animation at the transform associated.
 This is not enough for multiple texture object (like terrain). Use Render.animRenderer instead
   *)
-class virtual renderComponent : entity ->
+class virtual renderComponent : entity -> (unit -> Render.animRenderer) ->
 object 
   val mutable anim : Render.animRenderer option
   method get_entity : entity
-  method supply_anim : Render.animRenderer -> unit
-  (* /!\ your animRenderer need to be instanciate AND supply with supply_anim IN init() *)
-  method virtual init : unit -> unit
+  method init : unit -> unit
   method update : unit -> unit
 end
 

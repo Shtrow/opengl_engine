@@ -63,13 +63,12 @@ class scene (entities : entity list)  =
 )
   end
 
-class virtual renderComponent entity = 
+class virtual renderComponent entity (animRender) = 
 object(self) 
   inherit component entity
-  val mutable anim : Render.animRenderer option = None
-  method virtual init : unit -> unit
-  method supply_anim a = 
-    anim <- (Some a)
+  val mutable anim :  Render.animRenderer option = None
+  method  init () = 
+    anim <- Some (animRender () )
   method update () = 
     (Option.get anim)#draw (Render.to_sprite_coord (self#get_entity#get_world_transform))
 end

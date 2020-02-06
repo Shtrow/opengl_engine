@@ -15,13 +15,12 @@ object(self)
     if not is_ready then ()
     else
     (* This is where you read input (if your player) and you perform action *)
-    (* Don't forget to decrease cooldown after performing an action *)
+    (* Don't forget to reset cooldown after performing an action *)
+    cooldown <- 4;
     ()
-  
-
 end
 
-(* COMPONENT *)
+(* Component *)
 let component1 = 
 object(self)
   inherit component (an_entity:>entity)
@@ -33,29 +32,32 @@ object(self)
     ()
 end
 
-(* Creating animation *)
-let render1 = 
-object(self)
-inherit renderComponent (an_entity:>entity)
-method init () = 
-    let anim1 = new animation [
+(* CREATING ANIMATION *)
+
+(* This is a function that return an animRender, we make a function to delay ResourceManager.get_texture call *)
+let animRenderer1 () = 
+  let anim1 = new animation [
         (* Load any image your want for your animation *)
-        ResourceManager.load_texture_from_file "res/player.png"
+        ResourceManager.get_texture  "player_idle1"
       ] true
 
       in
     let anim2 = new animation [
         (* Load any image your want for your animation *)
-        ResourceManager.load_texture_from_file "res/wall/wall1.png";
-        ResourceManager.load_texture_from_file "res/wall/wall2.png";
+        ResourceManager.get_texture "wall1";
+        ResourceManager.get_texture "wall2";
       ] true in
 
       (* Setup your animation *)
       anim1#set_speed 20.0 ;  
       anim2#set_speed 12.0 ;
-  let render_anim = 
-     new animRenderer [("anim1",anim1);("anim2",anim2)] in
-  self#supply_anim render_anim 
+     new animRenderer [("anim1",anim1);("anim2",anim2)]
+
+
+let render1 = 
+object(self)
+(* We put the function animRenderer1 () in render so it will call it in init () *)
+inherit renderComponent (an_entity:>entity) animRenderer1
 end;;
 
 (* Dont forget to add your components to the entity *)

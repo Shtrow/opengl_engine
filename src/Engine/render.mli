@@ -17,7 +17,10 @@ val to_sprite_coord : Math.Transform.transform -> spriteCoord
 
 module ResourceManager : 
 sig
-  val load_texture_from_file : string -> texture2D
+(* create a texture accessible by "get_texture name"  *)
+  val load_texture_from_file : name:string -> path:string -> unit
+  val load_textures : unit -> unit
+  val get_texture : string -> texture2D
 end
 module SpriteRenderer : 
 sig
