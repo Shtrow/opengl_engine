@@ -85,6 +85,21 @@ check if you can use the "-fn" option
 No such file or directory: build
 *************************************
    ajouter des informations pour jouer en ASCII
-
    implémenter les actions de bases (déplacement, pivoter, tirer, poignarder) sans le graphisme
    améliorer le graphisme
+
+
+* <11/02/2020>
+** Fait
+   * Commencé à implementer les actions de bases
+** A faire:
+   * Resoudre le problème avec la capture de touches
+   * ajouter des informations pour jouer en ASCII
+   * Ecrire un RADME utile à un utilisateur
+   * Faire en sorte que le make marche, voici le message d'erreur
+*************************************
+File "Engine/dune", line 3, characters 12-19:
+3 |  (libraries glMLite glMLite.vbo glMLite.vertex_arrays glfw-ocaml glMLite.jpeg_loader glMLite.png_loader math))
+                ^^^^^^^
+Error: Library "glMLite" not found.
+*************************************
