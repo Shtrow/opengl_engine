@@ -36,13 +36,33 @@ and virtual component (entity :  entity )=
 
 type action = unit -> unit
 
-class virtual actor ?parent (cd : int) = 
+type direction = North | South | East | West
+let dir_to_vec = function 
+  | North -> Math.Vector2.down
+  | South -> Math.Vector2.up
+  | East -> Math.Vector2.right
+  | West -> Math.Vector2.left
+let dir_to_angle = function 
+  | East -> 270.
+  | West -> 90.0
+  | North -> 180.
+  | South -> 0.
+
+class virtual actor ?parent (cd : int) (actions) = 
   object(self)
-    
     inherit entity ?parent:parent ()
+    val mutable direction = South
     val mutable cooldown = cd
     val mutable is_ready  = false
+    val mutable position = (0,0)
+    val my_actions : (string* (actor -> unit)) list = actions
     method virtual take_action : unit -> unit
+    method get_action name = let d = List.assoc name my_actions in d
+    method set_position p = position <- p
+    method get_position  () = position
+    method get_direction () = direction
+    method set_direction d = direction<-d
+
   end
 
 class collision_box (box : rectangle)= 

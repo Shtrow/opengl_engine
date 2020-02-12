@@ -33,5 +33,9 @@ let degree_to_vector angle=
 let angle = rad_to_degree angle in
 cos angle, sin angle
 
+let vecI (x, y)= (Float.to_int x,Float.to_int y) 
+
+let vecF (x, y)= (float x,float y) 
+
 let vector_to_degree (x,y) = 
   Float.acos x |> rad_to_degree

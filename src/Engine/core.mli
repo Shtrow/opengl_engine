@@ -30,15 +30,27 @@ and virtual component  : entity ->
 
 type action  = unit -> unit
 
+type direction = North | South | East | West
 
-class virtual actor : ?parent:entity -> int ->
+val dir_to_vec : direction -> Math.Vector2.vector
+val dir_to_angle : direction -> float
+
+class virtual actor : ?parent:entity -> int -> (string* (actor -> unit)) list ->
   object
     inherit entity
     val mutable cooldown : int
     val mutable is_ready : bool
+    (* The cell where the actor is *)
+    val mutable position : (int*int)
+    val my_actions : (string* (actor -> unit)) list
     (* take_action is called every turn for every actor *)
     method virtual take_action : unit -> unit
-  end 
+    method get_action : string -> (actor -> unit)
+    method set_position : (int*int) -> unit
+    method get_position : unit -> (int*int)
+    method get_direction : unit -> direction
+    method set_direction : direction -> unit
+  end
 
 (* Instance of this component directly draw the animation at the transform associated.
 This is not enough for multiple texture object (like terrain). Use Render.animRenderer instead

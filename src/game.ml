@@ -7,6 +7,7 @@ open Player
 
 let window = init_graphic ();;
 Input.window_in_for_input window;;
+Input.init_input_callback window;;
 
 (* Loading textures *)
 ResourceManager.load_texture_from_file "player_idle" "res/player.png";;
@@ -23,6 +24,12 @@ let scene1 = new scene [
   Terrain.terrain; 
   (Player.player:>entity);
   ]
+let actors = [Player.player]
+
+let nextTurn () = 
+  List.iter (fun e  -> 
+    e#take_action ()
+    ) actors
 
 let rec gameLoop  (last_time: float)  : unit= 
   if  (windowShouldClose (window) )then () else
@@ -31,6 +38,7 @@ let rec gameLoop  (last_time: float)  : unit=
   clear();
   
   scene1#sceneUpdate();
+  nextTurn();
 
   update_graphic window;
 

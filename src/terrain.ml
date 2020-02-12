@@ -12,6 +12,7 @@ type cell = {
 type terrain = cell array array;;
 
 
+
 (* We make a function because we are sure that texture are load before calling get texture *)
 (* unit -> animRenderer *)
 let animTerrain ground = 
@@ -38,7 +39,21 @@ let create_terrain w h =
     
     terrain
 
-let map = create_terrain 12 12
+let map = create_terrain 12 12;;
+map.(6).(6) <-{map.(6).(6) with ground = Wall}
+
+let move_entity e ((i,j) as v) = 
+  if (i) >= Array.length map 
+  ||(i)< 0 
+  ||(j)>= Array.length map.(0)
+  ||(j) < 0 then () else begin
+  let (old_i,old_j) = e#get_position() in
+  match  map.(i).(j).ground with
+  | Wall -> ()
+  | _ -> map.(old_i).(old_j) <- {map.(old_i).(old_j) with entity = None};
+    map.(i).(j) <- {map.(i).(j) with entity = Some (e:>entity)};
+    e#set_position v
+    end
 
 (* Creating  *)
 let terrain =
