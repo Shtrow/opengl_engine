@@ -28,6 +28,12 @@ sig
   val drawSprite : texture2D:texture2D -> position:(float*float*float) -> size:(float * float) -> angle:float -> color:float array -> unit
 end
 
+module Camera :
+sig
+  val zoom : float -> unit
+  val move : (float*float) -> unit
+end
+
 (* texture list -> loop? -> *)
 class animation : texture2D list -> bool ->
 object

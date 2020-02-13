@@ -1,5 +1,6 @@
 open Engine.Core
 open Engine.Render
+open Engine.Input
 
 type player_state = Idle | Moving
 
@@ -51,14 +52,13 @@ object(self)
 
 end
 
-let current_cell = ref (4,4 )
-
 
 
 let moveComponent = 
 object(self)
   inherit component (player:>entity)
   val mutable l = true
+
   method move (i, j) = 
    let old_transform = self#get_entity#get_transform in 
     self#get_entity#set_transform @@ {old_transform with position = (float i *. 32., float j *. 32.)}
@@ -71,8 +71,37 @@ object(self)
     let d = player#get_transform in
     let d = {d with angle = ( dir_to_angle (player#get_direction()))} in 
     player#set_transform d ; 
-    self#move @@ player#get_position()
- 
+    self#move @@ player#get_position();
+
+end
+
+let cameraControlComponent = 
+object(self)
+  inherit component (player:>entity)
+  val mutable prev_mouse_pos = (0.0,0.0)
+  val mutable hold_mouse_button = false
+  method update () = 
+
+    (* Camera behavior *)
+    Engine.Render.Camera.zoom (!Engine.Input.scroll_offset);
+
+    if Engine.Input.isMouseButton0Down () then 
+      begin
+      if not hold_mouse_button then 
+        begin 
+          let (x, y ) as p  = getMousePosition ()  in  
+          prev_mouse_pos <- p ;
+          hold_mouse_button <- true ; prev_mouse_pos <-p
+        end
+      else
+      begin
+        let new_p = getMousePosition() in 
+        let offset = Math.Vector2.(-) new_p prev_mouse_pos in
+        Camera.move offset ;
+        prev_mouse_pos <- new_p;
+      end
+      end
+    else hold_mouse_button <- false
 end
 
 (* Creating animation *)
@@ -85,8 +114,12 @@ object(self)
 inherit renderComponent (player:>entity) (player_anims )
 end;;
 
+
+
+
 (player:>entity)#add_component (playerRender:>component);;
 (player:>entity)#add_component (moveComponent:>component);;
+(player:>entity)#add_component (cameraControlComponent:>component);;
 
 
 

@@ -271,6 +271,16 @@ struct
   let projection = Ogl_matrix.ortho_projection 0.0 (float width) (float height) 0.0 (-1.0) 1.0
   let init() = 
     Shader.setMatrix4 "projection" projection
+  let zoom off = 
+    let p = projection in 
+    Ogl_matrix.matrix_translate (0.,0.,off) p;
+    Shader.setMatrix4 "projection" p
+
+  let move (x,y) = 
+    let p = projection in
+    Ogl_matrix.matrix_translate (x,y,0.) p;
+    Shader.setMatrix4 "projection" p
+  
 
 end
 
