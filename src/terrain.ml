@@ -42,11 +42,14 @@ let create_terrain w h =
 let map = create_terrain 12 12;;
 map.(6).(6) <-{map.(6).(6) with ground = Wall}
 
-let move_entity e ((i,j) as v) = 
-  if (i) >= Array.length map 
+let out_of_bound (i,j) = 
+  (i) >= Array.length map 
   ||(i)< 0 
   ||(j)>= Array.length map.(0)
-  ||(j) < 0 then () else begin
+  ||(j) < 0 
+
+let move_entity e ((i,j) as v) = 
+  if out_of_bound v then () else begin
   let (old_i,old_j) = e#get_position() in
   match  map.(i).(j).ground with
   | Wall -> ()
@@ -54,6 +57,13 @@ let move_entity e ((i,j) as v) =
     map.(i).(j) <- {map.(i).(j) with entity = Some (e:>entity)};
     e#set_position v
     end
+
+let is_cell_blocked ((i,j) as v) =
+  out_of_bound v || 
+  match map.(i).(j).ground with
+  | Wall -> true
+  |_  -> false
+
 
 (* Creating  *)
 let terrain =

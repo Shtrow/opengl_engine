@@ -3,7 +3,7 @@ open Engine.Core
 open Render
 open GLFW
 open GL
-open Player
+open Actors
 
 let window = init_graphic ();;
 Input.window_in_for_input window;;
@@ -22,9 +22,10 @@ print_endline "Textures Loaded";;
 let scene1 = new scene [
   (* Add your entities here *)
   Terrain.terrain; 
-  (Player.player:>entity);
+  (Actors.player:>entity);
+  (Actors.enemy1:>entity);
   ]
-let actors = [Player.player]
+let actors = [Actors.player;Actors.enemy1]
 
 let nextTurn () = 
   List.iter (fun e  -> 
