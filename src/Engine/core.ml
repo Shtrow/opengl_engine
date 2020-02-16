@@ -1,5 +1,5 @@
 open Math.Transform
-open Math.Vector2
+open Math
 type rectangle = {height : int ; width : int}
 
 
@@ -16,7 +16,7 @@ class entity ?(parent) () =
     match parent with 
       | Some p -> let p_transform = p#get_world_transform in
        {transform with  angle = transform.angle +. p_transform.angle;
-      scale = mul transform.scale  p_transform.scale; position =
+      scale = Vector2.mul transform.scale  p_transform.scale; position =
         Math.Vector2.(+) transform.position p_transform.position
       }
       | None -> transform
@@ -37,26 +37,44 @@ and virtual component (entity :  entity )=
 type action = unit -> unit
 
 type direction = North | South | East | West
+let vec_to_dir = function
+  | 0.,1. -> South
+  | 0.,-1. -> North
+  | 1.,0. -> East
+  | -1.,0. -> West
+  |_ -> South
+
 let dir_to_vec = function 
   | North -> Math.Vector2.down
   | South -> Math.Vector2.up
   | East -> Math.Vector2.right
   | West -> Math.Vector2.left
+  
 let dir_to_angle = function 
   | East -> 270.
   | West -> 90.0
   | North -> 180.
   | South -> 0.
+  
+let back d = 
+  let inv = 
+    let v = dir_to_vec d in 
+    Vector2.mul_scalar v (-1.0) |> vec_to_dir in inv
 
 class virtual actor ?parent (cd : int) (actions) = 
   object(self)
     inherit entity ?parent:parent ()
     val mutable direction = South
     val mutable cooldown = cd
+    val mutable current_cd = cd
     val mutable is_ready  = false
     val mutable position = (0,0)
     val my_actions : (string* (actor -> unit)) list = actions
+    method is_ready () = is_ready
     method virtual take_action : unit -> unit
+    method decrement_cd () = current_cd <- current_cd -1;
+      if current_cd <= 0 then is_ready <- true; 
+    method reset_cd () = current_cd <-cooldown
     method get_action name = let d = List.assoc name my_actions in d
     method set_position p = position <- p
     method get_position  () = position
@@ -72,14 +90,24 @@ class collision_box (box : rectangle)=
 
 let iter_on_component_update = List.iter (fun c ->c#update ()) 
 let iter_on_component_init = List.iter (fun c ->c#init ()) 
-class scene (entities : entity list)  = 
+class scene (entities : entity list) actors  = 
   object(self)
     val mutable entities  = entities
+    val mutable actors  = actors
     (** TODO : optimiser gameUpdate *)
+    method next_turn () = 
+      List.iter (fun act ->
+        act#decrement_cd ()
+      ) actors;
+      (* Printf.printf "Next turn" *)
+
     method sceneUpdate ()= 
+      List.iter (fun act -> 
+        if act#is_ready () then act#take_action() ; act#reset_cd()
+      )actors;
     Render.clear ();
     List.iter ( fun e -> iter_on_component_update (e#get_components ) ) entities 
-    initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities
+    initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities ; self#next_turn()
 )
   end
 

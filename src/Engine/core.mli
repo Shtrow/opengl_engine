@@ -33,7 +33,9 @@ type action  = unit -> unit
 type direction = North | South | East | West
 
 val dir_to_vec : direction -> Math.Vector2.vector
+val vec_to_dir : Math.Vector2.vector -> direction
 val dir_to_angle : direction -> float
+val back : direction -> direction
 
 class virtual actor : ?parent:entity -> int -> (string* (actor -> unit)) list ->
   object
@@ -41,10 +43,14 @@ class virtual actor : ?parent:entity -> int -> (string* (actor -> unit)) list ->
     val mutable cooldown : int
     val mutable is_ready : bool
     (* The cell where the actor is *)
+    val mutable current_cd :int 
     val mutable position : (int*int)
     val my_actions : (string* (actor -> unit)) list
     (* take_action is called every turn for every actor *)
+    method is_ready: unit -> bool
+    method reset_cd: unit-> unit
     method virtual take_action : unit -> unit
+    method decrement_cd :unit -> unit
     method get_action : string -> (actor -> unit)
     method set_position : (int*int) -> unit
     method get_position : unit -> (int*int)
@@ -68,10 +74,11 @@ class collision_box :  rectangle ->
     val box : rectangle
   end
 
-class scene : entity list ->
+class scene : entity list -> actor list ->
   object
     val mutable entities : entity list
     method sceneUpdate : unit -> unit
+    method next_turn : unit -> unit
   end
 
 

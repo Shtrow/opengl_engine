@@ -1,3 +1,4 @@
+
 open Engine
 open Engine.Core
 open Render
@@ -11,6 +12,7 @@ Input.init_input_callback window;;
 
 (* Loading textures *)
 ResourceManager.load_texture_from_file "player_idle" "res/player.png";;
+ResourceManager.load_texture_from_file "enemy_idle" "res/enemy.png";;
 ResourceManager.load_texture_from_file "t_grass1" "res/grass1.png";;
 ResourceManager.load_texture_from_file "t_grass2" "res/grass2.png";;
 ResourceManager.load_texture_from_file "wall1" "res/wall/wall1.png";;
@@ -25,12 +27,9 @@ let scene1 = new scene [
   (Actors.player:>entity);
   (Actors.enemy1:>entity);
   ]
-let actors = [Actors.player;Actors.enemy1]
+ [Actors.enemy1;Actors.player;];;
 
-let nextTurn () = 
-  List.iter (fun e  -> 
-    e#take_action ()
-    ) actors
+ Actors.scene_ref := Some scene1;;
 
 let rec gameLoop  (last_time: float)  : unit= 
   if  (windowShouldClose (window) )then () else
@@ -39,7 +38,6 @@ let rec gameLoop  (last_time: float)  : unit=
   clear();
   
   scene1#sceneUpdate();
-  nextTurn();
 
   update_graphic window;
 
