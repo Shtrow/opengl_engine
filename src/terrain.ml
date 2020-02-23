@@ -42,6 +42,9 @@ let create_terrain w h =
 let map = create_terrain 12 12;;
 map.(6).(6) <-{map.(6).(6) with ground = Wall}
 
+let get_entity (i,j) map = 
+  map.(i).(j).entity
+
 let out_of_bound (i,j) = 
   (i) >= Array.length map 
   ||(i)< 0 
@@ -64,6 +67,18 @@ let is_cell_blocked ((i,j) as v) =
   | Wall -> true
   |_  -> false
 
+(* This function return the entity faced from i,j position *)
+let rec ray_cast ((i,j) as v) direction = 
+  let v_f = Math.Vector2.vecF v in 
+  if is_cell_blocked v then None 
+  else 
+    match get_entity v map with
+    |None -> ray_cast  (Math.Vector2.vecI (Math.Vector2.(+) (v_f)  direction)) direction
+    | e -> e
+
+let front_of pos dir =
+  let dir = dir_to_vec dir in 
+  Math.Vector2.vecI ((Math.Vector2.(+) (dir) (Math.Vector2.vecF pos)))
 
 (* Creating  *)
 let terrain =

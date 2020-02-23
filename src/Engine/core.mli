@@ -14,6 +14,9 @@ class entity  : ?parent:entity ->
     method add_component : component -> unit
     method get_components : (component list)
     (* Return world relative transform *)
+    method is_activated : bool
+    method deactivate : unit -> unit
+    method activate : unit -> unit
     method get_world_transform : Math.Transform.transform
     method get_transform : Math.Transform.transform
     method set_transform : Math.Transform.transform -> unit
@@ -67,6 +70,7 @@ object
   method get_entity : entity
   method init : unit -> unit
   method update : unit -> unit
+  method get_render_anim : unit -> Render.animRenderer
 end
 
 class collision_box :  rectangle ->

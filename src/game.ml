@@ -16,6 +16,10 @@ ResourceManager.load_texture_from_file "enemy_idle" "res/enemy.png";;
 ResourceManager.load_texture_from_file "t_grass1" "res/grass1.png";;
 ResourceManager.load_texture_from_file "t_grass2" "res/grass2.png";;
 ResourceManager.load_texture_from_file "wall1" "res/wall/wall1.png";;
+ResourceManager.load_texture_from_file "muzzle1" "res/fx/muzzle1.png";;
+ResourceManager.load_texture_from_file "muzzle2" "res/fx/muzzle2.png";;
+ResourceManager.load_texture_from_file "muzzle3" "res/fx/muzzle3.png";;
+ResourceManager.load_texture_from_file "muzzle4" "res/fx/muzzle4.png";;
 Engine.Render.ResourceManager.load_textures ();;
 print_endline "Textures Loaded";;
 
@@ -25,9 +29,10 @@ let scene1 = new scene [
   (* Add your entities here *)
   Terrain.terrain; 
   (Actors.player:>entity);
+  Actors.muzzle;
   (Actors.enemy1:>entity);
   ]
- [Actors.enemy1;Actors.player;];;
+ [Actors.enemy1;(Actors.player:>actor);];;
 
  Actors.scene_ref := Some scene1;;
 

@@ -7,17 +7,34 @@ let dt () = Render.dt()
 let update_dt f = (Render.ref_dt) := f
 class entity ?(parent) () = 
   object(self)
+    val mutable activated = true
     val mutable components : component list = []
     val mutable transform : transform = {position = 0.0,0.0; scale = 1.0,1.0; angle = 0.0; depth = 0.0}
     val mutable parent : entity option = parent
+    method is_activated = activated
+    method deactivate () = activated <- false
+    method activate () = activated <- true
     method set_transform t = transform <- t
     method get_transform = transform
     method get_world_transform : transform= 
     match parent with 
-      | Some p -> let p_transform = p#get_world_transform in
-       {transform with  angle = transform.angle +. p_transform.angle;
-      scale = Vector2.mul transform.scale  p_transform.scale; position =
-        Math.Vector2.(+) transform.position p_transform.position
+      | Some p -> let p_global_transform = p#get_world_transform in
+                  let p_local_transform = p#get_transform in
+       {transform with  angle = transform.angle +. p_global_transform.angle;
+      scale = Vector2.mul transform.scale  p_global_transform.scale; 
+      position =
+        let p = 
+        Math.Vector2.(+) transform.position p_global_transform.position 
+        in p
+        (* TODO : Find the correct formula *)
+
+        
+         (* in  let (x,y) = Math.Vector2.(-) p  p_global_transform.position   in 
+         
+         let x =  x*. (cos ((Float.pi /. 180.) *. p_global_transform.angle))
+         and y = y*. (sin ((Float.pi /. 180.) *. p_global_transform.angle))
+         in (x,y) *)
+          
       }
       | None -> transform
     method set_parent p = parent <- Some p
@@ -59,7 +76,7 @@ let dir_to_angle = function
 let back d = 
   let inv = 
     let v = dir_to_vec d in 
-    Vector2.mul_scalar v (-1.0) |> vec_to_dir in inv
+    Vector2.mul_scalar (-1.0) v  |> vec_to_dir in inv
 
 class virtual actor ?parent (cd : int) (actions) = 
   object(self)
@@ -88,7 +105,7 @@ class collision_box (box : rectangle)=
     val mutable box : rectangle = box
   end
 
-let iter_on_component_update = List.iter (fun c ->c#update ()) 
+let iter_on_component_update = List.iter (fun c ->   (c#update ())) 
 let iter_on_component_init = List.iter (fun c ->c#init ()) 
 class scene (entities : entity list) actors  = 
   object(self)
@@ -103,10 +120,10 @@ class scene (entities : entity list) actors  =
 
     method sceneUpdate ()= 
       List.iter (fun act -> 
-        if act#is_ready () then act#take_action() ; act#reset_cd()
+        if act#is_ready () && (act:>entity)#is_activated then act#take_action() ; act#reset_cd()
       )actors;
     Render.clear ();
-    List.iter ( fun e -> iter_on_component_update (e#get_components ) ) entities 
+    List.iter ( fun e -> if e#is_activated then  iter_on_component_update (e#get_components ) ) entities 
     initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities ; self#next_turn()
 )
   end
@@ -119,4 +136,5 @@ object(self)
     anim <- Some (animRender () )
   method update () = 
     (Option.get anim)#draw (Render.to_sprite_coord (self#get_entity#get_world_transform))
+  method get_render_anim () = Option.get anim
 end

@@ -57,6 +57,7 @@ object
   (* Change current animation from here *)
   method set_animation : string -> unit
   method get_animation : string -> animation
+  method get_current_anim : animation
   (* This update will draw current animation *)
   method draw : spriteCoord -> unit 
 

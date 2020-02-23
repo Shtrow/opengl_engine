@@ -23,7 +23,7 @@ u1-.v1,u2-.v2
 let (+) (u1,u2) (v1,v2) = 
 u1+.v1,u2+.v2
 
-let mul_scalar (u1,u2) scalar = 
+let mul_scalar scalar (u1,u2)  = 
 u1*.scalar,u2*.scalar
 
 let mul (u1,u2) (v1,v2) = 

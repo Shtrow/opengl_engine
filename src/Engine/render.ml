@@ -326,6 +326,7 @@ class animRenderer (animations) =
 object(self)
   val animations : (string * animation) list = animations
   val mutable currentAnimation : animation = (new animation [] true)
+  method get_current_anim = currentAnimation
   method set_animation name = currentAnimation <- (List.assoc name) animations
   method get_animation name = (List.assoc name) animations
   method draw spriteCoord = 

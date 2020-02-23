@@ -2,7 +2,7 @@ type transform =
 {
   position : float*float;
   scale : float*float;
-  angle : float;
+  angle : float; (* In degree *)
   depth : float; (* correspond to the third coordonate of the position vector *)
 }
 
