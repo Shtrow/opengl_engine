@@ -95,7 +95,7 @@ No such file or directory: build
 ** A faire:
    * Resoudre le problème avec la capture de touches
    * ajouter des informations pour jouer en ASCII
-   * Ecrire un RADME utile à un utilisateur
+   * Ecrire un README utile à un utilisateur
    * Faire en sorte que le make marche, voici le message d'erreur
 *************************************
 File "Engine/dune", line 3, characters 12-19:
@@ -103,3 +103,18 @@ File "Engine/dune", line 3, characters 12-19:
                 ^^^^^^^
 Error: Library "glMLite" not found.
 *************************************
+
+
+* <25/02/2020>
+** Fait:
+*** Trouvé la cause de l'erreur du make (l'erreur en haut depend de l'env de l'utilisateur)
+*** Resoulu le problème avec la capture de touches
+*** README très minimaliste
+** A faire:
+*** decider comme rendre le jeu interessant
+*** decider comme compliquer la vie aux joueurs
+*** generer les terrains de jeu automatiquement 
+*** preparer un tutoriel pour le jouer
+*** lire
+https://padlet.com/diderotpournosretraites/j413cz0jqfk7
+https://universiteouverte.org/2020/02/13/le-5-mars-saffiche-partout/
