@@ -57,9 +57,16 @@ let backstab actor =
   |Some e -> (e:>entity)#deactivate ()
 
 (* Player entity *)
-let muzzle = 
+
+let muzzle_pivot = 
 object(self)
   inherit entity  ()
+  
+end
+
+let muzzle = 
+object(self)
+  inherit entity  ~parent:muzzle_pivot ()
 end
 
 
@@ -92,7 +99,6 @@ object(self)
         |Some (GLFW.W) -> 
           (Option.get !scene_ref)#next_turn ()
         |Some (GLFW.S) ->  (self#get_action "shoot") (self:>actor);
-          (* muzzle#set_parent (self:>entity); *)
           let a =  muzzleRender#get_render_anim ()
           in 
           let a = a#get_current_anim in
@@ -100,16 +106,28 @@ object(self)
         | _ -> ()
 end
 
+
+let muzzle_pivot_behavior = 
+object(self)
+  inherit component muzzle_pivot
+  method init () = 
+    self#get_entity#set_parent (player:>entity);
+    (* let d = self#get_entity#get_transform in 
+    self#get_entity#set_transform {d with
+      pivot = (16.0,16.0)
+    } *)
+end
+
 let muzzle_behavior = 
 object(self)
   inherit component muzzle
   method init () = 
-    self#get_entity#set_parent (player:>entity);
+    self#get_entity#set_parent (muzzle_pivot:>entity);
     
     let d = self#get_entity#get_transform in 
     let (x,y) = d.position in 
     self#get_entity#set_transform {d with depth = 0.1;
-      position = (x+.8.,y+.32.)
+      position = (x-.3.,y+.8.)
     }
 end;;
 
@@ -138,6 +156,10 @@ object(self)
   inherit component (player:>entity)
   val mutable prev_mouse_pos = (0.0,0.0)
   val mutable hold_mouse_button = false
+  method init () =
+  let t = 
+    self#get_entity#get_transform in 
+    self#get_entity#set_transform {t with pivot = 16.0,16.0}
   method update () = 
 
     (* Camera behavior *)
@@ -222,6 +244,7 @@ end;;
 (enemy1:>entity)#add_component (enemyRender:>component);;
 (enemy1:>entity)#add_component (moveComponent enemy1 (4,4) :>component);;
 
+(muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);;
 
 (muzzle:>entity)#add_component (muzzleRender:>component);;
 (muzzle:>entity)#add_component (muzzle_behavior:>component);;

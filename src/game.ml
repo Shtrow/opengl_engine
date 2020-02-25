@@ -29,8 +29,9 @@ let scene1 = new scene [
   (* Add your entities here *)
   Terrain.terrain; 
   (Actors.player:>entity);
-  Actors.muzzle;
   (Actors.enemy1:>entity);
+  Actors.muzzle_pivot;
+  Actors.muzzle;
   ]
  [Actors.enemy1;(Actors.player:>actor);];;
 

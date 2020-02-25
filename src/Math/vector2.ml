@@ -6,6 +6,7 @@ let left = (-1.0,0.0)
 let right = (1.0,0.0)
 
 let rad_to_degree angle = angle *. (180.0 /. Float.pi)
+let degree_to_rad angle = angle *. ( Float.pi /.180.0)
 
 let lenght (v_x,v_y) = 
   (v_x *.v_x)+.(v_y*.v_y) |> sqrt

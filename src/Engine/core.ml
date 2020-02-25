@@ -9,7 +9,7 @@ class entity ?(parent) () =
   object(self)
     val mutable activated = true
     val mutable components : component list = []
-    val mutable transform : transform = {position = 0.0,0.0; scale = 1.0,1.0; angle = 0.0; depth = 0.0}
+    val mutable transform : transform = {position = 0.0,0.0; scale = 1.0,1.0; angle = 0.0; depth = 0.0; pivot =0.0,0.0}
     val mutable parent : entity option = parent
     method is_activated = activated
     method deactivate () = activated <- false
@@ -23,8 +23,15 @@ class entity ?(parent) () =
        {transform with  angle = transform.angle +. p_global_transform.angle;
       scale = Vector2.mul transform.scale  p_global_transform.scale; 
       position =
-        let p = 
-        Math.Vector2.(+) transform.position p_global_transform.position 
+        let s,c = sin @@ Math.Vector2.degree_to_rad (p_global_transform.angle ), cos @@ Math.Vector2.degree_to_rad (p_global_transform.angle ) in 
+
+        let px,py = Math.Vector2.(+) transform.position p_global_transform.position in 
+        let ox,oy = Math.Vector2.(+) p_local_transform.pivot p_global_transform.position in
+        let xnew, ynew =
+         c *. (px-.ox) -. s *.(py-.oy) +. ox,
+         s *. (px-.ox) +. c *.(py-.oy) +. oy in
+        let p = Math.Vector2.(+)  (xnew,ynew) (0.0,0.0)
+        (* Math.Vector2.(+) transform.position p_global_transform.position  *)
         in p
         (* TODO : Find the correct formula *)
 
@@ -36,7 +43,8 @@ class entity ?(parent) () =
          in (x,y) *)
           
       }
-      | None -> transform
+      | None -> 
+      transform
     method set_parent p = parent <- Some p
     method add_component c = 
       components <- c::components
@@ -55,7 +63,6 @@ type action = unit -> unit
 
 type direction = North | South | East | West
 let vec_to_dir = function
-  | 0.,1. -> South
   | 0.,-1. -> North
   | 1.,0. -> East
   | -1.,0. -> West

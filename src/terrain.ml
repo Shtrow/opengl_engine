@@ -42,14 +42,15 @@ let create_terrain w h =
 let map = create_terrain 12 12;;
 map.(6).(6) <-{map.(6).(6) with ground = Wall}
 
-let get_entity (i,j) map = 
-  map.(i).(j).entity
-
 let out_of_bound (i,j) = 
   (i) >= Array.length map 
   ||(i)< 0 
   ||(j)>= Array.length map.(0)
   ||(j) < 0 
+
+let get_entity (i,j) map =
+  if out_of_bound (i,j) then None else
+  map.(i).(j).entity
 
 let move_entity e ((i,j) as v) = 
   if out_of_bound v then () else begin

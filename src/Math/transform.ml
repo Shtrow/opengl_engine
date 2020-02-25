@@ -4,6 +4,7 @@ type transform =
   scale : float*float;
   angle : float; (* In degree *)
   depth : float; (* correspond to the third coordonate of the position vector *)
+  pivot : float *float
 }
 
 let distance src dst = 
