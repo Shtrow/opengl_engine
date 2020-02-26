@@ -4,7 +4,7 @@ open Math.Transform
 
 type  ground = Grass | Wall
 type cell = {
-  entity : entity option;
+  actor : actor option;
   coord : int * int;
   ground : ground;
   anim : ( animRenderer ) option
@@ -29,7 +29,7 @@ let create_terrain w h =
     let terrain = Array.init h (fun i ->
       Array.init w (fun j -> 
         {
-          entity = None;
+          actor = None;
           coord = i,j;
           ground = Grass;
           anim = None
@@ -50,15 +50,15 @@ let out_of_bound (i,j) =
 
 let get_entity (i,j) map =
   if out_of_bound (i,j) then None else
-  map.(i).(j).entity
+  map.(i).(j).actor
 
 let move_entity e ((i,j) as v) = 
   if out_of_bound v then () else begin
   let (old_i,old_j) = e#get_position() in
   match  map.(i).(j).ground with
   | Wall -> ()
-  | _ -> map.(old_i).(old_j) <- {map.(old_i).(old_j) with entity = None};
-    map.(i).(j) <- {map.(i).(j) with entity = Some (e:>entity)};
+  | _ -> map.(old_i).(old_j) <- {map.(old_i).(old_j) with actor = None};
+    map.(i).(j) <- {map.(i).(j) with actor = Some (e)};
     e#set_position v
     end
 

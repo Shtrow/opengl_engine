@@ -91,9 +91,12 @@ class virtual actor ?parent (cd : int) (actions) =
     val mutable direction = South
     val mutable cooldown = cd
     val mutable current_cd = cd
+    val mutable is_dead : bool = false
     val mutable is_ready  = false
     val mutable position = (3,3)
     val my_actions : (string* (actor -> unit)) list = actions
+    method is_dead = is_dead
+    method set_dead b = is_dead <- b
     method is_ready () = is_ready
     method virtual take_action : unit -> unit
     method decrement_cd () = current_cd <- current_cd -1;
@@ -127,7 +130,7 @@ class scene (entities : entity list) actors  =
 
     method sceneUpdate ()= 
       List.iter (fun act -> 
-        if act#is_ready () && (act:>entity)#is_activated then act#take_action() ; act#reset_cd()
+        if (not (act#is_dead)) &&act#is_ready () && (act:>entity)#is_activated then act#take_action() ; act#reset_cd()
       )actors;
     Render.clear ();
     List.iter ( fun e -> if e#is_activated then  iter_on_component_update (e#get_components ) ) entities 
@@ -139,9 +142,17 @@ class virtual renderComponent entity (animRender) =
 object(self) 
   inherit component entity
   val mutable anim :  Render.animRenderer option = None
+  val mutable sprite_coord : Render.spriteCoord= {
+    position = (0.0,0.0,0.0);
+    scale = (0.0,0.0);
+    rotation = 0.0
+  }
   method  init () = 
+    sprite_coord <- (Render.to_sprite_coord (self#get_entity#get_world_transform));
+
     anim <- Some (animRender () )
   method update () = 
     (Option.get anim)#draw (Render.to_sprite_coord (self#get_entity#get_world_transform))
+  method set_sprite_coord sc = sprite_coord <- sc
   method get_render_anim () = Option.get anim
 end

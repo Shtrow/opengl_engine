@@ -23,8 +23,11 @@ let muzzle_anim () =
   d#set_speed 0.01;
   new animRenderer ["fire",d]
 
-let enemy_anims () = let d = new animation [ResourceManager.get_texture "enemy_idle"] true in
-     new animRenderer ["enemy",d];;
+let enemy_anims () = 
+let d = new animation [ResourceManager.get_texture "enemy_idle"] true in
+let e = new animation [ResourceManager.get_texture "enemy_dead1"] true in
+
+     new animRenderer ["enemy",d;"dead", e];;
 
 
 (* ACTIONS *)
@@ -47,14 +50,14 @@ let shoot actor =
   match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
     | None -> () 
     (* WIP : I deactivate the entity for the moment *)
-    | Some ent -> (ent:>entity)#deactivate ()
+    | Some ent -> (ent)#set_dead true
 
 let backstab actor = 
   let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
   match Terrain.get_entity en Terrain.map with
   |None -> () 
   (* Enemy ? *)
-  |Some e -> (e:>entity)#deactivate ()
+  |Some e -> (e)#set_dead true
 
 (* Player entity *)
 
@@ -183,12 +186,12 @@ object(self)
           hold_mouse_button <- true ; prev_mouse_pos <-p
         end
       else
-      begin
-        let new_p = getMousePosition() in 
-        let offset = Math.Vector2.(-) new_p prev_mouse_pos in
-        Camera.move offset ;
-        prev_mouse_pos <- new_p;
-      end
+        begin
+          let new_p = getMousePosition() in 
+          let offset = Math.Vector2.(-) new_p prev_mouse_pos in
+          Camera.move offset ;
+          prev_mouse_pos <- new_p;
+        end
       end
     else hold_mouse_button <- false
 end
@@ -244,6 +247,23 @@ object(self)
 inherit renderComponent (enemy1:>entity) (enemy_anims )
 
 end;;
+let dead_behavior render actor = 
+object(self)
+  inherit component (enemy1:>entity)
+  val r = render
+  val a = actor
+  method init() = 
+
+    (actor:>entity)#add_component (self:>component)
+    
+
+  method update () = 
+    if actor#is_dead then begin(render())#set_animation "dead";
+    let t = (actor:>entity)#get_transform in 
+    (actor:>entity)#set_transform {t with scale = 0.55,1.6 }
+    end
+end;;
+
 
 
 (player:>entity)#add_component (playerRender:>component);;
@@ -252,6 +272,7 @@ end;;
 
 (enemy1:>entity)#add_component (enemyRender:>component);;
 (enemy1:>entity)#add_component (moveComponent enemy1 (3.,3.) :>component);;
+(enemy1:>entity)#add_component (dead_behavior (enemyRender#get_render_anim) enemy1);;
 
 (muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);;
 

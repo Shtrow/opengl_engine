@@ -50,6 +50,8 @@ class virtual actor : ?parent:entity -> int -> (string* (actor -> unit)) list ->
     val mutable position : (int*int)
     val my_actions : (string* (actor -> unit)) list
     (* take_action is called every turn for every actor *)
+    method is_dead : bool
+    method set_dead : bool -> unit
     method is_ready: unit -> bool
     method reset_cd: unit-> unit
     method virtual take_action : unit -> unit
@@ -70,6 +72,7 @@ object
   method get_entity : entity
   method init : unit -> unit
   method update : unit -> unit
+  method set_sprite_coord : Render.spriteCoord -> unit
   method get_render_anim : unit -> Render.animRenderer
 end
 
