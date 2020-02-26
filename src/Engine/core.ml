@@ -92,7 +92,7 @@ class virtual actor ?parent (cd : int) (actions) =
     val mutable cooldown = cd
     val mutable current_cd = cd
     val mutable is_ready  = false
-    val mutable position = (0,0)
+    val mutable position = (3,3)
     val my_actions : (string* (actor -> unit)) list = actions
     method is_ready () = is_ready
     method virtual take_action : unit -> unit

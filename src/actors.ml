@@ -135,19 +135,28 @@ let moveComponent actor init_position=
 object(self)
   inherit component (actor:>entity)
   val mutable l = true
+  val mutable current_position = init_position
 
   method move (i, j) = 
    let old_transform = self#get_entity#get_transform in 
-    self#get_entity#set_transform @@ {old_transform with position = (float i *. 32., float j *. 32.)}
+    self#get_entity#set_transform @@ {old_transform with position = (i *. 32., j *. 32.)}
 
   method init () = 
-    actor#set_position init_position
+    actor#set_position @@ Math.Vector2.vecI init_position
     
   method update () = 
+    let (dx,dy) as d =Math.Vector2.vecF @@actor#get_position() in 
+    let (px,py) as p= current_position in  
+    if px <> dx || py <> dy then
+    begin
+      let n = Math.Vector2.(-) d p |> Math.Vector2.mul_scalar (Engine.Core.dt()*.15.) in 
+      current_position <- 
+        Math.Vector2.(+) current_position n;
+    end;
     let d = actor#get_transform in
     let d = {d with angle = ( dir_to_angle (actor#get_direction()))} in 
     actor#set_transform d ; 
-    self#move @@ actor#get_position();
+    self#move @@ current_position;
 
 end
 
@@ -238,11 +247,11 @@ end;;
 
 
 (player:>entity)#add_component (playerRender:>component);;
-(player:>entity)#add_component (moveComponent player (1,0) :>component);;
+(player:>entity)#add_component (moveComponent player (1.,0.) :>component);;
 (player:>entity)#add_component (cameraControlComponent:>component);;
 
 (enemy1:>entity)#add_component (enemyRender:>component);;
-(enemy1:>entity)#add_component (moveComponent enemy1 (4,4) :>component);;
+(enemy1:>entity)#add_component (moveComponent enemy1 (3.,3.) :>component);;
 
 (muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);;
 
