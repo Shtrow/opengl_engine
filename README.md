@@ -1,7 +1,15 @@
 ## Game by Benjamin Viau and Henrie Pissa
 
 # Compilation
-`sh make`
+
+## Dependencies 
+* ocaml >= 4.08.1
+* dune
+* glMLite
+* glfw-ocaml
+* sfml
+
+`make`
 to compile, and
 `./game.exe`
 to run
