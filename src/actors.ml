@@ -43,7 +43,10 @@ let faceEast actor =
 let faceWest actor = 
   actor#set_direction West
 
+(* let gun_shoot_sound = Engine.Audio.load_sound "res/sound/gun_shot.wav";; *)
+
 let shoot actor =
+  (* Engine.Audio.play gun_shoot_sound ; *)
   match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
     | None -> () 
     (* WIP : I deactivate the entity for the moment *)
