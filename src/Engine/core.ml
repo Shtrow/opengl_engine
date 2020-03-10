@@ -150,7 +150,7 @@ object(self)
   method  init () = 
     sprite_coord <- (Render.to_sprite_coord (self#get_entity#get_world_transform));
 
-    anim <- Some (animRender () )
+    anim <- Some (Lazy.force animRender )
   method update () = 
     (Option.get anim)#draw (Render.to_sprite_coord (self#get_entity#get_world_transform))
   method set_sprite_coord sc = sprite_coord <- sc

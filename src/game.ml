@@ -20,8 +20,8 @@ ResourceManager.load_texture_from_file "muzzle1" "res/fx/muzzle1.png";;
 ResourceManager.load_texture_from_file "muzzle2" "res/fx/muzzle2.png";;
 ResourceManager.load_texture_from_file "muzzle3" "res/fx/muzzle3.png";;
 ResourceManager.load_texture_from_file "muzzle4" "res/fx/muzzle4.png";;
-print_endline "loui";;
 ResourceManager.load_texture_from_file "enemy_dead1" "res/chara/enemy_dead1.png";;
+ResourceManager.load_texture_from_file "bullet" "res/bullet.png";;
 Engine.Render.ResourceManager.load_textures ();;
 print_endline "Textures Loaded";;
 
@@ -32,8 +32,8 @@ let scene1 = new scene [
   Terrain.terrain; 
   (Actors.player:>entity);
   (Actors.enemy1:>entity);
-  Actors.muzzle_pivot;
   Actors.muzzle;
+  Actors.bullet;
   ]
  [Actors.enemy1;(Actors.player:>actor);];;
 

@@ -9,11 +9,11 @@ type player_state = Idle | Moving
 let scene_ref : scene option ref = ref None ;;
 
 (* Creating animation *)
-let player_anims () = let d = new animation [ResourceManager.get_texture "player_idle"] true in
-  new animRenderer ["player_idle",d]
+let player_anims = lazy (let d = new animation [ResourceManager.get_texture "player_idle"] true in
+   (new animRenderer ["player_idle",d]))
 
-let muzzle_anim () = 
-  let d = new animation 
+let muzzle_anim = 
+  lazy (let d = new animation 
   [
     ResourceManager.get_texture "muzzle1";
     ResourceManager.get_texture "muzzle2";
@@ -21,14 +21,15 @@ let muzzle_anim () =
     ResourceManager.get_texture "muzzle4";
   ] false in
   d#set_speed 0.01;
-  new animRenderer ["fire",d]
-
-let enemy_anims () = 
+(  new animRenderer ["fire",d]))
+let enemy_anims = lazy(
 let d = new animation [ResourceManager.get_texture "enemy_idle"] true in
 let e = new animation [ResourceManager.get_texture "enemy_dead1"] true in
 
-     new animRenderer ["enemy",d;"dead", e];;
+    (new animRenderer ["enemy",d;"dead", e]));;
 
+let bullet_anim  =  lazy (let d = new animation [ResourceManager.get_texture "bullet"] false in
+ (new animRenderer ["bullet",d]))
 
 (* ACTIONS *)
 let move actor =
@@ -54,22 +55,53 @@ let shoot actor =
 
 let backstab actor = 
   let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
-  match Terrain.get_entity en Terrain.map with
+  match Terrain.get_actor en Terrain.map with
   |None -> () 
   (* Enemy ? *)
   |Some e -> (e)#set_dead true
 
-(* Player entity *)
 
-let muzzle_pivot = 
+let bullet = 
 object(self)
-  inherit entity  ()
-  
+  inherit entity ~parent:Terrain.terrain () 
 end
+
+let bullet_behavior = 
+object(self)
+  inherit component bullet
+  val mutable target = 0.0,0.0
+  val mutable dir = 0.0,0.0
+  val bullet_speed = 1000.0
+  method shoot trans pos direction =
+
+    (* DEBUG *)
+
+
+    let t = Vector2.vecF @@ (Terrain.ray_cast2 (pos) (direction) ). coord in 
+    target <-t;
+    dir <-( dir_to_vec direction); 
+
+    self#get_entity#set_transform trans
+  method update () =
+    let t = self#get_entity#get_transform in 
+
+    if t.position < (Vector2.mul_scalar 32.0 target) then begin
+    
+      self#get_entity#set_transform (
+        Transform.translate t (Math.Vector2.mul_scalar (dt()*.bullet_speed) (dir))
+      )
+      end
+end
+
+let bulletRender =  
+object 
+inherit renderComponent bullet bullet_anim
+end
+
 
 let muzzle = 
 object(self)
-  inherit entity  ~parent:muzzle_pivot ()
+  inherit entity ()
 end
 
 
@@ -105,32 +137,26 @@ object(self)
           let a =  muzzleRender#get_render_anim ()
           in 
           let a = a#get_current_anim in
-            a#rewind()
+            a#rewind();
+            bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction())
         | _ -> ()
 end
 
 
-let muzzle_pivot_behavior = 
-object(self)
-  inherit component muzzle_pivot
-  method init () = 
-    self#get_entity#set_parent (player:>entity);
-    (* let d = self#get_entity#get_transform in 
-    self#get_entity#set_transform {d with
-      pivot = (16.0,16.0)
-    } *)
-end
+
 
 let muzzle_behavior = 
 object(self)
   inherit component muzzle
   method init () = 
-    self#get_entity#set_parent (muzzle_pivot:>entity);
+    self#get_entity#set_parent (Terrain.terrain);
     
+  method update () = 
     let d = self#get_entity#get_transform in 
     let (x,y) = d.position in 
     self#get_entity#set_transform {d with depth = 0.1;
-      position = (x-.3.,y+.8.)
+      position = Vector2.mul_scalar 32.0 (Vector2.vecF @@ Terrain.front_of (player#get_position()) (player#get_direction())) ;
+      angle = player#get_transform.angle
     }
 end;;
 
@@ -260,7 +286,7 @@ object(self)
   method update () = 
     if actor#is_dead then begin(render())#set_animation "dead";
     let t = (actor:>entity)#get_transform in 
-    (actor:>entity)#set_transform {t with scale = 0.55,1.6 }
+    (actor:>entity)#set_transform {t with scale = 0.53,1.65 }
     end
 end;;
 
@@ -274,7 +300,10 @@ end;;
 (enemy1:>entity)#add_component (moveComponent enemy1 (3.,3.) :>component);;
 (enemy1:>entity)#add_component (dead_behavior (enemyRender#get_render_anim) enemy1);;
 
-(muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);;
+(* (muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);; *)
 
 (muzzle:>entity)#add_component (muzzleRender:>component);;
 (muzzle:>entity)#add_component (muzzle_behavior:>component);;
+
+(bullet:>entity)#add_component (bulletRender:>component);;
+(bullet:>entity)#add_component (bullet_behavior:>component);;
