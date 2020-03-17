@@ -71,7 +71,7 @@ object(self)
   inherit component bullet
   val mutable target = 0.0,0.0
   val mutable dir = 0.0,0.0
-  val bullet_speed = 1000.0
+  val bullet_speed = 1500.0
   method shoot trans pos direction =
 
     (* DEBUG *)
@@ -85,7 +85,7 @@ object(self)
   method update () =
     let t = self#get_entity#get_transform in 
 
-    if t.position < (Vector2.mul_scalar 32.0 target) then begin
+    if t.position <> (Vector2.mul_scalar 32.0 target) then begin
     
       self#get_entity#set_transform (
         Transform.translate t (Math.Vector2.mul_scalar (dt()*.bullet_speed) (dir))
@@ -138,7 +138,8 @@ object(self)
           in 
           let a = a#get_current_anim in
             a#rewind();
-            bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction())
+            bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction());
+        (Option.get !scene_ref)#next_turn ()
         | _ -> ()
 end
 
@@ -153,7 +154,6 @@ object(self)
     
   method update () = 
     let d = self#get_entity#get_transform in 
-    let (x,y) = d.position in 
     self#get_entity#set_transform {d with depth = 0.1;
       position = Vector2.mul_scalar 32.0 (Vector2.vecF @@ Terrain.front_of (player#get_position()) (player#get_direction())) ;
       angle = player#get_transform.angle

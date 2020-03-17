@@ -352,6 +352,6 @@ let update_graphic window =
     swapBuffers window;
     pollEvents()
 let clear () = 
-  glClearColor ~r:0.5 ~g:0.5 ~b:0.5 ~a:1.0;
+  glClearColor ~r:0.0 ~g:0.0 ~b:0.0 ~a:0.0;
   glClear ~mask: [GL_COLOR_BUFFER_BIT; GL_DEPTH_BUFFER_BIT];
   glEnable (GL_DEPTH_TEST)
