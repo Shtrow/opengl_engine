@@ -96,7 +96,7 @@ class virtual actor ?parent (cd : int) (actions) =
     val mutable position = (3,3)
     val my_actions : (string* (actor -> unit)) list = actions
     method is_dead = is_dead
-    method set_dead b = is_dead <- b
+    method kill b = is_dead <- b
     method is_ready () = is_ready
     method virtual take_action : unit -> unit
     method decrement_cd () = current_cd <- current_cd -1;
@@ -150,7 +150,7 @@ object(self)
   method  init () = 
     sprite_coord <- (Render.to_sprite_coord (self#get_entity#get_world_transform));
 
-    anim <- Some (Lazy.force animRender )
+    anim <- Some (Oo.copy (Lazy.force animRender) )
   method update () = 
     (Option.get anim)#draw (Render.to_sprite_coord (self#get_entity#get_world_transform))
   method set_sprite_coord sc = sprite_coord <- sc

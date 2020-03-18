@@ -51,14 +51,14 @@ let shoot actor =
   match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
     | None -> () 
     (* WIP : I deactivate the entity for the moment *)
-    | Some ent -> (ent)#set_dead true
+    | Some ent -> (ent)#kill true
 
 let backstab actor = 
   let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
   match Terrain.get_actor en Terrain.map with
   |None -> () 
   (* Enemy ? *)
-  |Some e -> (e)#set_dead true
+  |Some e -> (e)#kill true
 
 
 let bullet = 
@@ -160,18 +160,18 @@ object(self)
     }
 end;;
 
-let moveComponent actor init_position= 
+class moveComponent actor = 
 object(self)
   inherit component (actor:>entity)
   val mutable l = true
-  val mutable current_position = init_position
+  val mutable current_position = 0.0,0.0
 
   method move (i, j) = 
    let old_transform = self#get_entity#get_transform in 
     self#get_entity#set_transform @@ {old_transform with position = (i *. 32., j *. 32.)}
 
   method init () = 
-    actor#set_position @@ Math.Vector2.vecI init_position
+    current_position <- Math.Vector2.vecF @@ actor#get_position()
     
   method update () = 
     let (dx,dy) as d =Math.Vector2.vecF @@actor#get_position() in 
@@ -235,11 +235,32 @@ end;;
 
   
 (* Enemies *)
-
-let enemy1 = 
+class enemy0 = 
 object(self)
   inherit actor ~parent:(Terrain.terrain) 1 [
-        ("move",move);
+    ("east",faceEast);
+    ("west",faceWest);
+    ("south",faceSouth);
+    ("north",faceNorth); 
+    ("shoot",shoot); 
+  ]
+  method is_ready () =
+    is_ready
+  method take_action () =
+    begin
+    let dir = dir_to_vec (self#get_direction()) in 
+    (* If an enemy meet the player, he shoot him  *)
+      match Terrain.ray_cast  (Terrain.front_of position (self#get_direction())) (dir) with 
+        | None -> ()
+        |Some e-> (self#get_action "shoot") (self:>actor)
+    end;
+    is_ready <- false
+end;;
+
+class enemy1 = 
+object(self)
+  inherit actor ~parent:(Terrain.terrain) 1 [
+    ("move",move);
     ("east",faceEast);
     ("west",faceWest);
     ("south",faceSouth);
@@ -251,7 +272,7 @@ object(self)
   method take_action () =
     begin
     match Terrain.is_cell_blocked @@ (Vector2.(+) (Vector2.vecF position ) (dir_to_vec (self#get_direction()) ) |> Vector2.vecI) with
-    | false -> (self#get_action "move") self ;
+    | false -> (self#get_action "move") (self:>actor) ;
     | _ -> self#set_direction (back (self#get_direction()))
     end;
     begin
@@ -259,7 +280,7 @@ object(self)
     (* If an enemy meet the player, he shoot him  *)
       match Terrain.ray_cast  (Terrain.front_of position (self#get_direction())) (dir) with 
         | None -> ()
-        |Some e-> (self#get_action "shoot") self
+        |Some e-> (self#get_action "shoot") (self:>actor)
     end;
     is_ready <- false
 end;;
@@ -267,15 +288,15 @@ end;;
 
 
 
-let enemyRender = 
+class enemyRender enemy= 
 object(self)
         (* Note that we use Core.renderCompenent here *)
-inherit renderComponent (enemy1:>entity) (enemy_anims )
+inherit renderComponent (enemy:>entity) (enemy_anims )
 
-end;;
-let dead_behavior render actor = 
+end
+class dead_behavior render actor enemy = 
 object(self)
-  inherit component (enemy1:>entity)
+  inherit component (enemy:>entity)
   val r = render
   val a = actor
   method init() = 
@@ -288,17 +309,29 @@ object(self)
     let t = (actor:>entity)#get_transform in 
     (actor:>entity)#set_transform {t with scale = 0.53,1.65 }
     end
-end;;
+end
+
+let add_ennemy enemy position direction =
+  enemy#set_direction direction;
+  enemy#set_position position;
+  let render = new enemyRender enemy in 
+  let c1 = new dead_behavior render#get_render_anim enemy enemy in 
+  let c2 = new moveComponent enemy in 
+  (enemy:>entity)#add_component (render:>component);
+  (enemy:>entity)#add_component (c2 :>component);
+  (enemy:>entity)#add_component (c1 :>component);
+  enemy
+
+;;
 
 
+
+player#set_position (1,0);;
 
 (player:>entity)#add_component (playerRender:>component);;
-(player:>entity)#add_component (moveComponent player (1.,0.) :>component);;
+(player:>entity)#add_component (new moveComponent player :>component);;
 (player:>entity)#add_component (cameraControlComponent:>component);;
 
-(enemy1:>entity)#add_component (enemyRender:>component);;
-(enemy1:>entity)#add_component (moveComponent enemy1 (3.,3.) :>component);;
-(enemy1:>entity)#add_component (dead_behavior (enemyRender#get_render_anim) enemy1);;
 
 (* (muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);; *)
 

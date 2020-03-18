@@ -51,7 +51,7 @@ class virtual actor : ?parent:entity -> int -> (string* (actor -> unit)) list ->
     val my_actions : (string* (actor -> unit)) list
     (* take_action is called every turn for every actor *)
     method is_dead : bool
-    method set_dead : bool -> unit
+    method kill : bool -> unit
     method is_ready: unit -> bool
     method reset_cd: unit-> unit
     method virtual take_action : unit -> unit
