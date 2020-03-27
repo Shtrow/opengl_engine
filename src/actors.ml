@@ -51,7 +51,7 @@ let shoot actor =
   match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
     | None -> () 
     (* WIP : I deactivate the entity for the moment *)
-    | Some ent -> (ent)#kill true
+    | Some ent -> print_endline "HIT" ;(ent)#kill true
 
 let backstab actor = 
   let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
@@ -146,7 +146,7 @@ end
 
 
 
-let muzzle_behavior = 
+let muzzle_behavior= 
 object(self)
   inherit component muzzle
   method init () = 
@@ -171,7 +171,8 @@ object(self)
     self#get_entity#set_transform @@ {old_transform with position = (i *. 32., j *. 32.)}
 
   method init () = 
-    current_position <- Math.Vector2.vecF @@ actor#get_position()
+    current_position <- Math.Vector2.vecF @@ actor#get_position();
+    Terrain.move_entity (actor) (actor#get_position())
     
   method update () = 
     let (dx,dy) as d =Math.Vector2.vecF @@actor#get_position() in 
@@ -238,6 +239,7 @@ end;;
 class enemy0 = 
 object(self)
   inherit actor ~parent:(Terrain.terrain) 1 [
+    ("move",move);
     ("east",faceEast);
     ("west",faceWest);
     ("south",faceSouth);
@@ -247,6 +249,7 @@ object(self)
   method is_ready () =
     is_ready
   method take_action () =
+
     begin
     let dir = dir_to_vec (self#get_direction()) in 
     (* If an enemy meet the player, he shoot him  *)
@@ -256,6 +259,7 @@ object(self)
     end;
     is_ready <- false
 end;;
+
 
 class enemy1 = 
 object(self)
@@ -315,8 +319,8 @@ let add_ennemy enemy position direction =
   enemy#set_direction direction;
   enemy#set_position position;
   let render = new enemyRender enemy in 
-  let c1 = new dead_behavior render#get_render_anim enemy enemy in 
   let c2 = new moveComponent enemy in 
+  let c1 = new dead_behavior render#get_render_anim enemy enemy in 
   (enemy:>entity)#add_component (render:>component);
   (enemy:>entity)#add_component (c2 :>component);
   (enemy:>entity)#add_component (c1 :>component);

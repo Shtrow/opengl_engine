@@ -28,18 +28,18 @@ print_endline "Textures Loaded";;
 
 let enemy1 = add_ennemy (new enemy1) (4,5) East;;
 let enemy2 = add_ennemy (new enemy1) (5,8) South;;
-let enemy3 = add_ennemy (new enemy0) (9,4) North;;
+let enemy3 = add_ennemy (new enemy0) (2,4) South;;
 let scene1 = new scene [
   (* Add your entities here *)
   Terrain.terrain; 
   (Actors.player:>entity);
+  (enemy3:>entity);
   (enemy1:>entity);
   (enemy2:>entity);
-  (enemy3:>entity);
   Actors.muzzle;
   Actors.bullet;
   ]
- [enemy1;enemy2;enemy3;(Actors.player:>actor);];;
+ [enemy3;enemy1;enemy2;(Actors.player:>actor);];;
 
  Actors.scene_ref := Some scene1;;
 
