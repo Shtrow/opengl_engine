@@ -47,11 +47,6 @@ let faceEast actor =
 let faceWest actor = 
   actor#set_direction West
 
-let shoot actor =
-  match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
-    | None -> () 
-    (* WIP : I deactivate the entity for the moment *)
-    | Some ent -> print_endline "HIT" ;(ent)#kill true
 
 let backstab actor = 
   let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
@@ -110,6 +105,33 @@ let muzzleRender =
 object(self)
   inherit renderComponent muzzle muzzle_anim 
 end
+let muzzle_behavior= 
+object(self)
+  inherit component muzzle
+  method init () = 
+    self#get_entity#set_parent (Terrain.terrain);
+  
+  method change_focus (actor:actor) = 
+    let d = self#get_entity#get_transform in 
+      self#get_entity#set_transform {d with depth = 0.1;
+        position = Vector2.mul_scalar 32.0 (Vector2.vecF @@ Terrain.front_of (actor#get_position()) (actor#get_direction())) ;
+        angle = actor#get_transform.angle
+      }
+end;;
+
+let shoot actor =
+  let a =  muzzleRender#get_render_anim ()
+  in 
+  muzzle_behavior#change_focus actor;
+  let a = a#get_current_anim in
+  a#rewind();
+  bullet_behavior#shoot (actor:>entity)#get_transform ((actor)#get_position()) ((actor)#get_direction());
+
+  match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
+    | None -> () 
+    (* WIP : I deactivate the entity for the moment *)
+    | Some ent -> print_endline "HIT" ;(ent)#kill true
+  
 
 let player = 
 object(self)
@@ -146,19 +168,7 @@ end
 
 
 
-let muzzle_behavior= 
-object(self)
-  inherit component muzzle
-  method init () = 
-    self#get_entity#set_parent (Terrain.terrain);
-    
-  method update () = 
-    let d = self#get_entity#get_transform in 
-    self#get_entity#set_transform {d with depth = 0.1;
-      position = Vector2.mul_scalar 32.0 (Vector2.vecF @@ Terrain.front_of (player#get_position()) (player#get_direction())) ;
-      angle = player#get_transform.angle
-    }
-end;;
+
 
 class moveComponent actor = 
 object(self)
