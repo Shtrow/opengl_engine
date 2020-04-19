@@ -3,14 +3,15 @@ open Engine.Render
 open Engine.Input
 open Math
 
-type player_state = Idle | Moving
-
 
 let scene_ref : scene option ref = ref None ;;
 
 (* Creating animation *)
 let player_anims = lazy (let d = new animation [ResourceManager.get_texture "player_idle"] true in
-   (new animRenderer ["player_idle",d]))
+ let k = new animation [ResourceManager.get_texture "player_idle_knife"] false in
+ let k2 = new animation [ResourceManager.get_texture "player_knife_attack1";ResourceManager.get_texture "player_knife_attack2";ResourceManager.get_texture "player_knife_attack3";ResourceManager.get_texture "player_knife_attack4";] false in
+ k2#set_speed 0.1;
+ (new animRenderer ["player_idle",d;"player_idle_knife",k;"player_knife_attack",k2]))
 
 let muzzle_anim = 
   lazy (let d = new animation 
@@ -47,13 +48,14 @@ let faceEast actor =
 let faceWest actor = 
   actor#set_direction West
 
-
 let backstab actor = 
   let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
   match Terrain.get_actor en Terrain.map with
   |None -> () 
   (* Enemy ? *)
-  |Some e -> (e)#kill true
+  |Some e -> 
+      
+    (e)#kill true
 
 
 let bullet = 
@@ -134,6 +136,7 @@ let shoot actor =
     (ent)#kill true
   
 
+type player_state = IdleKnife | KnifeAttack | IdleGun
 let player = 
 object(self)
   inherit actor ~parent:(Terrain.terrain) "player" 0 [
@@ -145,24 +148,44 @@ object(self)
     ("shoot",shoot);   
     ("backstab",backstab);   
     ]          
+  val mutable state = IdleKnife
+  val mutable ammo = 0
+  method nb_ammo = ammo
+  method state  = state
+  method set_state s = state <- s
   method take_action () = 
       match Engine.Input.getKeyPressed () with 
         |Some( GLFW.Right) -> (self#get_action "east") (self:>actor)
         |Some( GLFW.Left) -> (self#get_action "west") (self:>actor)
         |Some( GLFW.Up) -> (self#get_action "north") (self:>actor)
         |Some( GLFW.Down) -> (self#get_action "south") (self:>actor)
-        |Some (GLFW.Space) ->  (self#get_action "backstab") (self:>actor) ; (self#get_action "move") (self:>actor) ;
+        |Some (GLFW.Space) ->  
+            begin
+              match Terrain.get_actor (Terrain.front_of (self#get_position()) (self#get_direction())) Terrain.map with
+              |Some a -> 
+                  self#set_state KnifeAttack;
+                (self#get_action "backstab") (self:>actor) ;
+              | _ ->
+                if self# nb_ammo <=0 then 
+                  self#set_state IdleKnife
+                else
+                 self#set_state IdleGun;
+            end;
+            (self#get_action "move") (self:>actor) ;
         (* is_ready <- false; *)
         (Option.get !scene_ref)#next_turn ()
         |Some (GLFW.W) -> 
           (Option.get !scene_ref)#next_turn ()
-        |Some (GLFW.S) ->  (self#get_action "shoot") (self:>actor);
+        |Some (GLFW.S) -> if self#nb_ammo > 0 then 
+          begin
+          (self#get_action "shoot") (self:>actor);
           let a =  muzzleRender#get_render_anim ()
           in 
           let a = a#get_current_anim in
             a#rewind();
             bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction());
         (Option.get !scene_ref)#next_turn ()
+          end else ()
         | _ -> ()
 end
 
@@ -240,9 +263,21 @@ object(self)
 inherit renderComponent (player:>entity) (player_anims )
 end;;
 
+let player_anim_script render = 
+object(self)
+  inherit component (player:>entity)
+  method update () =
+    match player#state with
+    | IdleKnife -> 
+      ((render())#get_current_anim #rewind)();
+      (render())#set_animation "player_idle_knife";
+    | KnifeAttack -> 
+      (render())#set_animation "player_knife_attack";
+    | IdleGun -> 
+      ((render())#get_current_anim #rewind)();
+      (render())#set_animation "player_idle";
 
-
-
+end
 
 
   
@@ -332,9 +367,9 @@ let add_ennemy enemy position direction =
 player#set_position (1,0);;
 
 (player:>entity)#add_component (playerRender:>component);;
-(player:>entity)#add_component (new moveComponent player :>component);;
+(player:>entity)#add_component (player_anim_script playerRender#get_render_anim:>component);;
+(player:>entity)#add_component (new moveComponent (player:>actor) :>component);;
 (player:>entity)#add_component (cameraControlComponent:>component);;
-
 
 (* (muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);; *)
 

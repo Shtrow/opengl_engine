@@ -12,6 +12,11 @@ Input.init_input_callback window;;
 
 (* Loading textures *)
 ResourceManager.load_texture_from_file "player_idle" "res/player.png";;
+ResourceManager.load_texture_from_file "player_idle_knife" "res/chara/player_knife.png";;
+ResourceManager.load_texture_from_file "player_knife_attack1" "res/chara/player_knife_attack1.png";;
+ResourceManager.load_texture_from_file "player_knife_attack2" "res/chara/player_knife_attack2.png";;
+ResourceManager.load_texture_from_file "player_knife_attack3" "res/chara/player_knife_attack3.png";;
+ResourceManager.load_texture_from_file "player_knife_attack4" "res/chara/player_knife_attack4.png";;
 ResourceManager.load_texture_from_file "enemy_idle" "res/enemy.png";;
 ResourceManager.load_texture_from_file "t_grass1" "res/grass1.png";;
 ResourceManager.load_texture_from_file "t_grass2" "res/grass2.png";;
