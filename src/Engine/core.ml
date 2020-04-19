@@ -5,13 +5,16 @@ type rectangle = {height : int ; width : int}
 
 let dt () = Render.dt()
 let update_dt f = (Render.ref_dt) := f
-class entity ?(parent) () = 
+class entity ?(parent) tag () = 
   object(self)
+    val tag : string = tag
     val mutable activated = true
     val mutable components : component list = []
-    val mutable transform : transform = {position = 0.0,0.0; scale = 1.0,1.0; angle = 0.0; depth = 0.0; pivot =0.0,0.0}
+    val mutable transform : transform = {position = 0.0,0.0; scale = 1.0,1.0; 
+        angle = 0.0; depth = 0.0; pivot =0.0,0.0}
     val mutable parent : entity option = parent
     method is_activated = activated
+    method get_tag = tag
     method deactivate () = activated <- false
     method activate () = activated <- true
     method set_transform t = transform <- t
@@ -85,9 +88,9 @@ let back d =
     let v = dir_to_vec d in 
     Vector2.mul_scalar (-1.0) v  |> vec_to_dir in inv
 
-class virtual actor ?parent (cd : int) (actions) = 
+class virtual actor ?parent tag (cd : int) (actions) = 
   object(self)
-    inherit entity ?parent:parent ()
+    inherit entity ?parent:parent tag ()
     val mutable direction = South
     val mutable cooldown = cd
     val mutable current_cd = cd

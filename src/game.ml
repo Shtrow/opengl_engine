@@ -26,9 +26,9 @@ Engine.Render.ResourceManager.load_textures ();;
 print_endline "Textures Loaded";;
 
 
-let enemy1 = add_ennemy (new enemy1) (4,5) East;;
-let enemy2 = add_ennemy (new enemy1) (5,8) South;;
-let enemy3 = add_ennemy (new enemy0) (2,4) South;;
+let enemy1 = add_ennemy (new enemy1 "e1") (4,5) East;;
+let enemy2 = add_ennemy (new enemy1 "e2") (5,8) South;;
+let enemy3 = add_ennemy (new enemy0 "e3") (2,4) South;;
 let scene1 = new scene [
   (* Add your entities here *)
   Terrain.terrain; 

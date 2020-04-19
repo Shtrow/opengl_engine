@@ -349,6 +349,11 @@ let init_graphic () =
     window
 
 let update_graphic window = 
+  (* let font = Ftgl.ftglCreatePixmapFont "/usr/share/fonts/TTF/Hack-Bold.ttf" in
+  
+  Ftgl.ftglSetFontFaceSize font 72 72;
+  Ftgl.ftglRenderFont font "Hello World!" FTGL_RENDER_ALL; *)
+
     swapBuffers window;
     pollEvents()
 let clear () = 

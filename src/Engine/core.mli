@@ -5,7 +5,7 @@ val dt : unit -> float
 (* Only needed in game loop *)
 val update_dt : float -> unit
 
-class entity  : ?parent:entity ->
+class entity  : ?parent:entity -> string ->
          unit ->
   object
     val mutable components : component list
@@ -15,6 +15,7 @@ class entity  : ?parent:entity ->
     method get_components : (component list)
     (* Return world relative transform *)
     method is_activated : bool
+    method get_tag : string
     method deactivate : unit -> unit
     method activate : unit -> unit
     method get_world_transform : Math.Transform.transform
@@ -40,7 +41,7 @@ val vec_to_dir : Math.Vector2.vector -> direction
 val dir_to_angle : direction -> float
 val back : direction -> direction
 
-class virtual actor : ?parent:entity -> int -> (string* (actor -> unit)) list ->
+class virtual actor : ?parent:entity -> string -> int -> (string* (actor -> unit)) list ->
   object
     inherit entity
     val mutable cooldown : int

@@ -98,7 +98,7 @@ let rec aux prev ((i,j) as v) d =
 (* Creating  *)
 let terrain =
 object
-  inherit entity ()
+  inherit entity "terrain1" ()
 end
 
 let terrainRender =

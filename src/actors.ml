@@ -58,7 +58,7 @@ let backstab actor =
 
 let bullet = 
 object(self)
-  inherit entity ~parent:Terrain.terrain () 
+  inherit entity ~parent:Terrain.terrain "bullet" () 
 end
 
 let bullet_behavior = 
@@ -96,7 +96,7 @@ end
 
 let muzzle = 
 object(self)
-  inherit entity ()
+  inherit entity "muzzle" ()
 end
 
 
@@ -130,12 +130,13 @@ let shoot actor =
   match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
     | None -> () 
     (* WIP : I deactivate the entity for the moment *)
-    | Some ent -> print_endline "HIT" ;(ent)#kill true
+    | Some ent -> print_endline "HIT" ;
+    (ent)#kill true
   
 
 let player = 
 object(self)
-  inherit actor ~parent:(Terrain.terrain) 0 [
+  inherit actor ~parent:(Terrain.terrain) "player" 0 [
     ("move",move);
     ("east",faceEast);
     ("west",faceWest);
@@ -246,9 +247,9 @@ end;;
 
   
 (* Enemies *)
-class enemy0 = 
+class enemy0 tag = 
 object(self)
-  inherit actor ~parent:(Terrain.terrain) 1 [
+  inherit actor ~parent:(Terrain.terrain) tag 1 [
     ("move",move);
     ("east",faceEast);
     ("west",faceWest);
@@ -265,22 +266,17 @@ object(self)
     (* If an enemy meet the player, he shoot him  *)
       match Terrain.ray_cast  (Terrain.front_of position (self#get_direction())) (dir) with 
         | None -> ()
-        |Some e-> (self#get_action "shoot") (self:>actor)
+        |Some e-> 
+              if String.equal e#get_tag "player" then 
+                (self#get_action "shoot") (self:>actor)
     end;
     is_ready <- false
 end;;
 
 
-class enemy1 = 
+class enemy1 tag = 
 object(self)
-  inherit actor ~parent:(Terrain.terrain) 1 [
-    ("move",move);
-    ("east",faceEast);
-    ("west",faceWest);
-    ("south",faceSouth);
-    ("north",faceNorth); 
-    ("shoot",shoot); 
-  ]
+  inherit enemy0 tag as super
   method is_ready () =
     is_ready
   method take_action () =
@@ -289,14 +285,7 @@ object(self)
     | false -> (self#get_action "move") (self:>actor) ;
     | _ -> self#set_direction (back (self#get_direction()))
     end;
-    begin
-    let dir = dir_to_vec (self#get_direction()) in 
-    (* If an enemy meet the player, he shoot him  *)
-      match Terrain.ray_cast  (Terrain.front_of position (self#get_direction())) (dir) with 
-        | None -> ()
-        |Some e-> (self#get_action "shoot") (self:>actor)
-    end;
-    is_ready <- false
+    super#take_action()
 end;;
 
 

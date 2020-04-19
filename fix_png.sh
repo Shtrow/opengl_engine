@@ -22,8 +22,11 @@ cd glMLite;
 make &&
 make png &&
 make install_png &&
+make ftgl &&
+make install_ftgl &&
 
 cp SRC/*png* $OPAM_SWITCH_PREFIX/lib/glMLite/ &&
+cp SRC/*ftgl* $OPAM_SWITCH_PREFIX/lib/glMLite/ &&
 
 cd ../../;
 
