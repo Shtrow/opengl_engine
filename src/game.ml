@@ -17,6 +17,13 @@ ResourceManager.load_texture_from_file "player_knife_attack1" "res/chara/player_
 ResourceManager.load_texture_from_file "player_knife_attack2" "res/chara/player_knife_attack2.png";;
 ResourceManager.load_texture_from_file "player_knife_attack3" "res/chara/player_knife_attack3.png";;
 ResourceManager.load_texture_from_file "player_knife_attack4" "res/chara/player_knife_attack4.png";;
+ResourceManager.load_texture_from_file "blood_splash1" "res/fx/blood_splash1.png";;
+ResourceManager.load_texture_from_file "blood_splash2" "res/fx/blood_splash2.png";;
+ResourceManager.load_texture_from_file "blood_splash3" "res/fx/blood_splash3.png";;
+ResourceManager.load_texture_from_file "blood_splash4" "res/fx/blood_splash4.png";;
+ResourceManager.load_texture_from_file "blood_splash5" "res/fx/blood_splash5.png";;
+ResourceManager.load_texture_from_file "blood_splash6" "res/fx/blood_splash6.png";;
+ResourceManager.load_texture_from_file "blood_splash7" "res/fx/blood_splash7.png";;
 ResourceManager.load_texture_from_file "enemy_idle" "res/enemy.png";;
 ResourceManager.load_texture_from_file "t_grass1" "res/grass1.png";;
 ResourceManager.load_texture_from_file "t_grass2" "res/grass2.png";;
@@ -37,12 +44,13 @@ let enemy3 = add_ennemy (new enemy0 "e3") (2,4) South;;
 let scene1 = new scene [
   (* Add your entities here *)
   Terrain.terrain; 
-  (Actors.player:>entity);
   (enemy3:>entity);
   (enemy1:>entity);
   (enemy2:>entity);
+  (Actors.player:>entity);
   Actors.muzzle;
   Actors.bullet;
+  Actors.blood_splash;
   ]
  [enemy3;enemy1;enemy2;(Actors.player:>actor);];;
 
@@ -63,5 +71,5 @@ let rec gameLoop  (last_time: float)  : unit=
 ;;
 let _ = 
 (* ResourceManager.load_textures (); *)
-
+Printexc.record_backtrace true;
 gameLoop 0.;

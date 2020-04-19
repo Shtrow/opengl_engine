@@ -13,6 +13,21 @@ let player_anims = lazy (let d = new animation [ResourceManager.get_texture "pla
  k2#set_speed 0.1;
  (new animRenderer ["player_idle",d;"player_idle_knife",k;"player_knife_attack",k2]))
 
+let blood_splash_anim = 
+  lazy (
+    let a = new animation
+    [
+      ResourceManager.get_texture "blood_splash1";
+      ResourceManager.get_texture "blood_splash2";
+      ResourceManager.get_texture "blood_splash3";
+      ResourceManager.get_texture "blood_splash4";
+      ResourceManager.get_texture "blood_splash5";
+      ResourceManager.get_texture "blood_splash6";
+      ResourceManager.get_texture "blood_splash7";
+    ] false in 
+    a#set_speed 0.10;
+    (new animRenderer ["splash", a])
+  )
 let muzzle_anim = 
   lazy (let d = new animation 
   [
@@ -47,15 +62,6 @@ let faceEast actor =
   actor#set_direction East
 let faceWest actor = 
   actor#set_direction West
-
-let backstab actor = 
-  let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
-  match Terrain.get_actor en Terrain.map with
-  |None -> () 
-  (* Enemy ? *)
-  |Some e -> 
-      
-    (e)#kill true
 
 
 let bullet = 
@@ -95,6 +101,15 @@ object
 inherit renderComponent bullet bullet_anim
 end
 
+let blood_splash = 
+object(self)
+  inherit entity ~parent:Terrain.terrain "blood_splash" ()
+end
+
+let blood_splashRender = 
+object
+  inherit renderComponent blood_splash blood_splash_anim
+end
 
 let muzzle = 
 object(self)
@@ -135,6 +150,16 @@ let shoot actor =
     | Some ent -> print_endline "HIT" ;
     (ent)#kill true
   
+let backstab actor = 
+  let en =  Terrain.front_of (actor#get_position ()) (actor#get_direction()) in 
+  match Terrain.get_actor en Terrain.map with
+  |None -> () 
+  (* Enemy ? *)
+  |Some e -> 
+    (blood_splashRender#get_render_anim())#get_current_anim  #rewind();
+      
+    (e)#kill true
+
 
 type player_state = IdleKnife | KnifeAttack | IdleGun
 let player = 
@@ -267,7 +292,16 @@ let player_anim_script render =
 object(self)
   inherit component (player:>entity)
   method update () =
-    match player#state with
+    let t = (self#get_entity#get_transform) in 
+    player#set_transform {t with depth = 0.01};
+    let b_pos = (Vector2.(+) (Engine.Core.dir_to_vec @@ (player:> actor) # get_direction()
+    |> Vector2.mul_scalar 16.00
+    ) t.position) 
+    in 
+      blood_splash#set_transform {
+        t with angle = (player:>entity)#get_transform.angle; depth = 0.2; position = b_pos
+      };
+match player#state with
     | IdleKnife -> 
       ((render())#get_current_anim #rewind)();
       (render())#set_animation "player_idle_knife";
@@ -276,7 +310,6 @@ object(self)
     | IdleGun -> 
       ((render())#get_current_anim #rewind)();
       (render())#set_animation "player_idle";
-
 end
 
 
@@ -345,7 +378,7 @@ object(self)
   method update () = 
     if actor#is_dead then begin(render())#set_animation "dead";
     let t = (actor:>entity)#get_transform in 
-    (actor:>entity)#set_transform {t with scale = 0.53,1.65 }
+    (actor:>entity)#set_transform {t with scale = 0.53,1.65; depth = 0.001; angle = (player:>actor)#get_transform.angle }
     end
 end
 
@@ -375,6 +408,8 @@ player#set_position (1,0);;
 
 (muzzle:>entity)#add_component (muzzleRender:>component);;
 (muzzle:>entity)#add_component (muzzle_behavior:>component);;
+
+(blood_splash:>entity)#add_component (blood_splashRender:>component);;
 
 (bullet:>entity)#add_component (bulletRender:>component);;
 (bullet:>entity)#add_component (bullet_behavior:>component);;
