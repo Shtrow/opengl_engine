@@ -39,4 +39,5 @@ let vecI (x, y)= (Float.to_int x,Float.to_int y)
 let vecF (x, y)= (float x,float y) 
 
 let vector_to_degree (x,y) = 
-  Float.acos x |> rad_to_degree
+  Float.atan2 y x
+ |> rad_to_degree
