@@ -12,17 +12,22 @@ type cell = {
 type terrain = cell array array;;
 
 
+let anim_map1 = 
+  lazy (
+  let an = new animation [ResourceManager.get_texture "map1"] false in
+  new animRenderer ["map1", an]
+  )
 
 (* We make a function because we are sure that texture are load before calling get texture *)
 (* unit -> animRenderer *)
 let animTerrain ground = 
-let anim =
-match ground with  
-  | Grass -> new animation [ResourceManager.get_texture "t_grass1"; ResourceManager.get_texture "t_grass2"] true
-  | Wall -> new animation [ResourceManager.get_texture "wall1"] false 
-  in
-    anim#set_speed 1.0;
-    new animRenderer  [ "cell",anim]
+  let anim =
+  match ground with  
+    | Grass -> new animation [ResourceManager.get_texture "t_grass1"; ResourceManager.get_texture "t_grass2"] true
+    | Wall -> new animation [ResourceManager.get_texture "wall1"] false 
+    in
+      anim#set_speed 1.0;
+      new animRenderer  [ "cell",anim]
 
 (* TODO : More complete function create *)
 let create_terrain w h =
@@ -96,14 +101,15 @@ let rec aux prev ((i,j) as v) d =
   in aux v ((front_of v direction)) @@ dir_to_vec direction
 
 (* Creating  *)
-let terrain =
-object
+let terrain1 =
+object(self)
   inherit entity "terrain1" ()
+  initializer let t = self#get_transform in self#set_transform {t with depth = -0.1 }
 end
 
 let terrainRender =
 object(self)
-  inherit component terrain
+  inherit component terrain1
   method init () = 
     (* I center the terrain *)
     let transform = self#get_entity#get_world_transform  in
@@ -119,13 +125,24 @@ object(self)
 
   method update () = 
     let transform =  self#get_entity#get_world_transform  in
+    let transform = {transform with depth = -0.001} in 
+    (*anim_map1#draw (to_sprite_coord transform);*)
     Array.iteri ( fun i c ->
     Array.iteri (fun j c1 ->
         let transform = {transform with position = Math.Vector2.(+) transform.position (float i *.32.0, float j *. 32.0); depth = -0.01} in 
-        (Option.get(c1.anim))#draw  (to_sprite_coord transform)
+        match c1.anim with
+        | Some a -> a#draw (to_sprite_coord transform)
+        | None -> ()
     ) c
    ) map
      
 end
+let map1Render =
+  object(self)
+    inherit renderComponent terrain1 anim_map1
+    initializer  
+    let transform = self#get_entity#get_world_transform  in
+    self#get_entity#set_transform @@  Math.Transform.translate transform (200.0, 0.0) ; 
+  end
 ;;
-(terrain:>entity)#add_component terrainRender;;
+(terrain1:>entity)#add_component (map1Render:>component);;

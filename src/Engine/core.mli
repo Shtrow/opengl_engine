@@ -41,10 +41,12 @@ val vec_to_dir : Math.Vector2.vector -> direction
 val dir_to_angle : direction -> float
 val back : direction -> direction
 
+type player_state = IdleKnife | KnifeAttack | IdleGun | Aiming
 class virtual actor : ?parent:entity -> string -> int -> (string* (actor -> unit)) list ->
   object
     inherit entity
     val mutable cooldown : int
+    val mutable state : player_state
     val mutable is_ready : bool
     (* The cell where the actor is *)
     val mutable current_cd :int 
@@ -52,6 +54,8 @@ class virtual actor : ?parent:entity -> string -> int -> (string* (actor -> unit
     val my_actions : (string* (actor -> unit)) list
     (* take_action is called every turn for every actor *)
     method is_dead : bool
+    method state : player_state
+    method set_state : player_state -> unit
     method kill : bool -> unit
     method is_ready: unit -> bool
     method reset_cd: unit-> unit
@@ -86,8 +90,10 @@ class scene : entity list -> actor list ->
   object
     val mutable entities : entity list
     method sceneUpdate : unit -> unit
+    method get_actors : actor list 
     method next_turn : unit -> unit
   end
 
+val scene_ref : scene option ref
 
 

@@ -313,7 +313,7 @@ object(self)
       in
   let s = 
     let ((x,y),(sx,sy))  = (textureMatch.size, spriteCoord.scale) in 
-    ((float x)*.sx,(float y)*.sy) in
+    ((float y)*.sy,(float x)*.sx) in
     SpriteRenderer.drawSprite 
     textureMatch
     spriteCoord.position

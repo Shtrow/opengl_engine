@@ -4,7 +4,6 @@ open Engine.Input
 open Math
 
 
-let scene_ref : scene option ref = ref None ;;
 
 (* Creating animation *)
 let player_anims = lazy (let d = new animation [ResourceManager.get_texture "player_idle"] true in
@@ -66,7 +65,7 @@ let faceWest actor =
 
 let bullet = 
 object(self)
-  inherit entity ~parent:Terrain.terrain "bullet" () 
+  inherit entity ~parent:Terrain.terrain1 "bullet" () 
 end
 
 let bullet_behavior = 
@@ -103,7 +102,7 @@ end
 
 let blood_splash = 
 object(self)
-  inherit entity ~parent:Terrain.terrain "blood_splash" ()
+  inherit entity ~parent:(Terrain.terrain1) "blood_splash" ()
 end
 
 let blood_splashRender = 
@@ -126,7 +125,7 @@ let muzzle_behavior=
 object(self)
   inherit component muzzle
   method init () = 
-    self#get_entity#set_parent (Terrain.terrain);
+    self#get_entity#set_parent (Terrain.terrain1);
   
   method change_focus (actor:actor) = 
     let d = self#get_entity#get_transform in 
@@ -161,10 +160,9 @@ let backstab actor =
     (e)#kill true
 
 
-type player_state = IdleKnife | KnifeAttack | IdleGun
 let player = 
 object(self)
-  inherit actor ~parent:(Terrain.terrain) "player" 0 [
+  inherit actor ~parent:(Terrain.terrain1) "player" 0 [
     ("move",move);
     ("east",faceEast);
     ("west",faceWest);
@@ -173,11 +171,8 @@ object(self)
     ("shoot",shoot);   
     ("backstab",backstab);   
     ]          
-  val mutable state = IdleKnife
   val mutable ammo = 0
   method nb_ammo = ammo
-  method state  = state
-  method set_state s = state <- s
   method take_action () = 
       match Engine.Input.getKeyPressed () with 
         |Some( GLFW.Right) -> (self#get_action "east") (self:>actor)
@@ -211,7 +206,21 @@ object(self)
             bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction());
         (Option.get !scene_ref)#next_turn ()
           end else ()
-        | _ -> ()
+        | _ -> ();
+
+          match Engine.Input.isMouseButton0Down(), state with
+          
+        | true,Aiming ->
+            (self#get_action "shoot") (self:>actor);
+            bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction());
+        
+        | true, _ (*when ammo >0*) ->
+            self#set_state Aiming
+        | _,_ -> () ;
+      match Engine.Input.isMouseButton1Down(), state with
+        |true, Aiming ->
+          if ammo >0 then self#set_state IdleGun else self#set_state IdleKnife
+        |_,_ -> ();
 end
 
 
@@ -243,7 +252,18 @@ object(self)
         Math.Vector2.(+) current_position n;
     end;
     let d = actor#get_transform in
-    let d = {d with angle = ( dir_to_angle (actor#get_direction()))} in 
+    let angle = 
+      match actor#state with 
+        Aiming -> 
+          let mouse_angle = Engine.Input.getMousePosition () in
+         (* TODO : get the correct mouse angle*) 
+          (Transform.lookAt (actor#get_world_transform) {
+            d with
+          position = mouse_angle;
+        }) .angle       
+          
+        |_ ->  dir_to_angle (actor#get_direction()) in
+    let d = {d with angle = angle} in 
     actor#set_transform d ; 
     self#move @@ current_position;
 
@@ -310,6 +330,8 @@ match player#state with
     | IdleGun -> 
       ((render())#get_current_anim #rewind)();
       (render())#set_animation "player_idle";
+    | Aiming ->
+        ()
 end
 
 
@@ -317,7 +339,7 @@ end
 (* Enemies *)
 class enemy0 tag = 
 object(self)
-  inherit actor ~parent:(Terrain.terrain) tag 1 [
+  inherit actor ~parent:(Terrain.terrain1) tag 1 [
     ("move",move);
     ("east",faceEast);
     ("west",faceWest);
@@ -378,7 +400,7 @@ object(self)
   method update () = 
     if actor#is_dead then begin(render())#set_animation "dead";
     let t = (actor:>entity)#get_transform in 
-    (actor:>entity)#set_transform {t with scale = 0.53,1.65; depth = 0.001; angle = (player:>actor)#get_transform.angle }
+    (actor:>entity)#set_transform {t with  depth = 0.001; angle = (player:>actor)#get_transform.angle }
     end
 end
 

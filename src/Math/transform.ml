@@ -18,7 +18,7 @@ let lookAt src dst =
   let p_dst = dst.position in
   let new_angle =
   Vector2.normalize (Vector2.(-) p_src p_dst) |> Vector2.vector_to_degree in
-  {src with angle = new_angle}
+  {src with angle = new_angle +. 90.0}
 
 (* Direction should be multiply by dt *)
 let translate t direction = 

@@ -19,6 +19,8 @@ let keyIsReleased k = true
 
 let isMouseButton0Down () = getMouseButton (w()) 0
 
+let isMouseButton1Down () = getMouseButton (w()) 1
+
 let getKeyPressed () = 
   match !key_pressed_buf with 
   |[] -> None

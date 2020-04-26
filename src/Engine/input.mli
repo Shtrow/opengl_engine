@@ -20,3 +20,5 @@ val getKeyPressed : unit -> key_code option
 val getMousePosition :unit -> (float*float)
 
 val isMouseButton0Down : unit -> bool
+
+val isMouseButton1Down : unit -> bool

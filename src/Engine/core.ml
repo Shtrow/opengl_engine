@@ -88,9 +88,13 @@ let back d =
     let v = dir_to_vec d in 
     Vector2.mul_scalar (-1.0) v  |> vec_to_dir in inv
 
+type player_state = IdleKnife | KnifeAttack | IdleGun | Aiming
 class virtual actor ?parent tag (cd : int) (actions) = 
   object(self)
     inherit entity ?parent:parent tag ()
+    val mutable state = IdleKnife
+    method state  = state
+    method set_state s = state <- s
     val mutable direction = South
     val mutable cooldown = cd
     val mutable current_cd = cd
@@ -124,6 +128,7 @@ class scene (entities : entity list) actors  =
   object(self)
     val mutable entities  = entities
     val mutable actors  = actors
+    method get_actors : actor list = actors
     (** TODO : optimiser gameUpdate *)
     method next_turn () = 
       List.iter (fun act ->
@@ -140,6 +145,8 @@ class scene (entities : entity list) actors  =
     initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities ; self#next_turn()
 )
   end
+
+let scene_ref : scene option ref = ref None 
 
 class virtual renderComponent entity (animRender) = 
 object(self) 
