@@ -186,6 +186,9 @@ object(self)
                  self#set_state IdleGun;
                 ammo <- (ammo+12);
                 (a:>entity)#deactivate()
+              | Some a when (String.equal) (a:>entity)#get_tag  "exit" ->
+                  (* Next lvl*)
+                ()
               |Some a -> 
                   print_endline (a:>entity)#get_tag;
                   self#set_state KnifeAttack;
@@ -199,6 +202,8 @@ object(self)
             (self#get_action "move") (self:>actor) ;
         (* is_ready <- false; *)
         (Option.get !scene_ref)#next_turn ()
+        |Some (GLFW.R) -> 
+            ()
         |Some (GLFW.W) -> 
           (Option.get !scene_ref)#next_turn ()
         |Some (GLFW.S) -> if self#nb_ammo > 0 then 

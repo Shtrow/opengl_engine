@@ -58,12 +58,17 @@ let rec gameLoop  (last_time: float)  : unit=
   let t = Unix.gettimeofday() in
   Engine.Core.update_dt (t -. last_time);
   clear();
-  (current_lvl)#sceneUpdate();
+  let current_scene =  (Lazy.force @@ Queue.peek Level.levels) in 
+   current_scene#sceneUpdate();
 
   update_graphic window;
 
   if Level.scene_completed current_lvl then  
-    print_endline "LEVEL CLEAR" else
+    begin
+    Level.next();
+    print_endline "LEVEL CLEAR";
+    end
+  else 
   gameLoop t
 
 ;;

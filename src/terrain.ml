@@ -145,6 +145,8 @@ let rec aux prev ((i,j) as v) d =
     end
   in aux v ((front_of v direction)) @@ dir_to_vec direction
 
+let exit = (1,0)
+
 (* Creating  *)
 let terrain1 =
 object(self)
