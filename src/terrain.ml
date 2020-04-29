@@ -1,8 +1,8 @@
+open Level_parser
 open Engine.Render
 open Engine.Core
 open Math.Transform
 
-type  ground = Grass | Wall
 type cell = {
   actor : actor option;
   coord : int * int;
@@ -11,6 +11,41 @@ type cell = {
 }
 type terrain = cell array array;;
 
+let map_from_ast =
+  List.mapi (
+    fun i l -> 
+    List.mapi (
+      fun j tile ->
+      (*Printf.printf "%i  %i \n" i j;*)
+        match tile with
+        |Wall -> {
+            actor = None;
+            coord = (i,j);
+            ground = Wall;
+            anim = None;
+          }
+        |Glass -> {
+            actor = None;
+            coord = (i,j);
+            ground = Glass;
+            anim = None;
+          }
+        | _ ->
+          {
+            actor = None;
+            coord = (i,j);
+            ground = Grass;
+            anim = None;
+          }
+    ) l
+  )
+
+
+let to_array l= 
+  let tmp = 
+  List.map Array.of_list l |> Array.of_list
+  in
+  tmp
 
 let anim_map1 = 
   lazy (
@@ -25,6 +60,7 @@ let animTerrain ground =
   match ground with  
     | Grass -> new animation [ResourceManager.get_texture "t_grass1"; ResourceManager.get_texture "t_grass2"] true
     | Wall -> new animation [ResourceManager.get_texture "wall1"] false 
+    | _ -> new animation [ResourceManager.get_texture "wall1"] false 
     in
       anim#set_speed 1.0;
       new animRenderer  [ "cell",anim]
@@ -44,8 +80,11 @@ let create_terrain w h =
     
     terrain
 
-let map = create_terrain 12 12;;
-map.(6).(6) <-{map.(6).(6) with ground = Wall}
+let map = 
+  (*create_terrain 20 20*)
+  let map = 
+  map_from_ast @@ Level_parser.parse "./map1" |> to_array 
+  in map
 
 let get_cell (i,j) = map.(i).(j)
 
@@ -63,16 +102,22 @@ let move_entity e ((i,j) as v) =
   if out_of_bound v then () else begin
   let (old_i,old_j) = e#get_position() in
   match  map.(i).(j).ground with
-  | Wall -> ()
+  | Wall | Glass-> ()
   | _ -> map.(old_i).(old_j) <- {map.(old_i).(old_j) with actor = None};
     map.(i).(j) <- {map.(i).(j) with actor = Some (e)};
     e#set_position v
     end
 
+let is_cell_blocked_2 ((i,j) as v) =
+  out_of_bound v || 
+  match map.(i).(j).ground with
+  | Wall  -> true
+  |_  -> false
+
 let is_cell_blocked ((i,j) as v) =
   out_of_bound v || 
   match map.(i).(j).ground with
-  | Wall -> true
+  | Wall | Glass -> true
   |_  -> false
 
 (* This function return the entity faced from i,j position *)
@@ -83,7 +128,7 @@ let front_of pos dir =
 
 let rec ray_cast ((i,j) as v) direction = 
   let v_f = Math.Vector2.vecF v in 
-  if is_cell_blocked v then None 
+  if is_cell_blocked_2 v then None 
   else 
     match get_actor v map with
     |None -> ray_cast  (Math.Vector2.vecI (Math.Vector2.(+) (v_f)  direction)) direction
@@ -126,7 +171,6 @@ object(self)
   method update () = 
     let transform =  self#get_entity#get_world_transform  in
     let transform = {transform with depth = -0.001} in 
-    (*anim_map1#draw (to_sprite_coord transform);*)
     Array.iteri ( fun i c ->
     Array.iteri (fun j c1 ->
         let transform = {transform with position = Math.Vector2.(+) transform.position (float i *.32.0, float j *. 32.0); depth = -0.01} in 
@@ -146,3 +190,4 @@ let map1Render =
   end
 ;;
 (terrain1:>entity)#add_component (map1Render:>component);;
+(*(terrain1:>entity)#add_component (terrainRender:>component);;*)

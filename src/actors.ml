@@ -182,7 +182,12 @@ object(self)
         |Some (GLFW.Space) ->  
             begin
               match Terrain.get_actor (Terrain.front_of (self#get_position()) (self#get_direction())) Terrain.map with
+              | Some a when (String.equal) (a:>entity)#get_tag  "gun" ->
+                 self#set_state IdleGun;
+                ammo <- (ammo+12);
+                (a:>entity)#deactivate()
               |Some a -> 
+                  print_endline (a:>entity)#get_tag;
                   self#set_state KnifeAttack;
                 (self#get_action "backstab") (self:>actor) ;
               | _ ->
@@ -198,6 +203,8 @@ object(self)
           (Option.get !scene_ref)#next_turn ()
         |Some (GLFW.S) -> if self#nb_ammo > 0 then 
           begin
+            ammo <- ammo -1;
+            Printf.printf "Ammo : %i\n" ammo;
           (self#get_action "shoot") (self:>actor);
           let a =  muzzleRender#get_render_anim ()
           in 
@@ -208,19 +215,22 @@ object(self)
           end else ()
         | _ -> ();
 
-          match Engine.Input.isMouseButton0Down(), state with
+          (*match Engine.Input.isMouseButton0Down(), state with*)
           
-        | true,Aiming ->
-            (self#get_action "shoot") (self:>actor);
-            bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction());
+        (*| true,Aiming ->*)
+            (*(self#get_action "shoot") (self:>actor);*)
+            (*bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction());*)
         
-        | true, _ (*when ammo >0*) ->
-            self#set_state Aiming
-        | _,_ -> () ;
-      match Engine.Input.isMouseButton1Down(), state with
-        |true, Aiming ->
-          if ammo >0 then self#set_state IdleGun else self#set_state IdleKnife
-        |_,_ -> ();
+        (*| true, _ (*when ammo >0*) ->*)
+            (*self#set_state Aiming*)
+        (*| _,_ -> () ;*)
+      (* Aiming with the mouse*)
+      (*match Engine.Input.isMouseButton1Down(), state with*)
+        (*|true, Aiming ->*)
+          (*if ammo >0 then self#set_state IdleGun else self#set_state IdleKnife*)
+        (*|_,_ -> ();*)
+
+  
 end
 
 
@@ -419,7 +429,6 @@ let add_ennemy enemy position direction =
 
 
 
-player#set_position (1,0);;
 
 (player:>entity)#add_component (playerRender:>component);;
 (player:>entity)#add_component (player_anim_script playerRender#get_render_anim:>component);;

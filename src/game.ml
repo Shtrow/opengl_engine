@@ -22,6 +22,11 @@ ResourceManager.load_texture_from_file "blood_splash7" "res/fx/blood_splash7.png
 ResourceManager.load_texture_from_file "bullet" "res/bullet.png";;
 ResourceManager.load_texture_from_file "enemy_dead1" "res/chara/enemy_dead1.png";;
 ResourceManager.load_texture_from_file "enemy_idle" "res/enemy.png";;
+ResourceManager.load_texture_from_file "gun1" "res/gun1.png";;
+ResourceManager.load_texture_from_file "gun2" "res/gun2.png";;
+ResourceManager.load_texture_from_file "gun3" "res/gun3.png";;
+ResourceManager.load_texture_from_file "gun4" "res/gun4.png";;
+ResourceManager.load_texture_from_file "gun5" "res/gun5.png";;
 ResourceManager.load_texture_from_file "muzzle1" "res/fx/muzzle1.png";;
 ResourceManager.load_texture_from_file "muzzle2" "res/fx/muzzle2.png";;
 ResourceManager.load_texture_from_file "muzzle3" "res/fx/muzzle3.png";;
