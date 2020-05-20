@@ -1,4 +1,4 @@
 (executable
  (name game)
+ (public_name game)
  (libraries  engine))
-

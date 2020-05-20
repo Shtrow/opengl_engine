@@ -19,11 +19,11 @@ cd __GLMLITE__;
 
 git clone $GLMLITE_URL ;
 cd glMLite;
-make &&
-make png &&
-make install_png &&
-make ftgl &&
-make install_ftgl &&
+make;
+make png;
+make install_png;
+make ftgl;
+make install_ftgl;
 
 cp SRC/*png* $OPAM_SWITCH_PREFIX/lib/glMLite/ &&
 cp SRC/*ftgl* $OPAM_SWITCH_PREFIX/lib/glMLite/ &&

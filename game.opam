@@ -1,0 +1,30 @@
+opam-version: "2.0"
+
+name: "game"
+version: "0.0"
+license: "P7"
+synopsis: "PLong project"
+description: """
+A opengl video game.
+"""
+homepage: "https://gaufre.informatique.univ-paris-diderot.fr/Shtrow/pissa-viau-plong-2019"
+bug-reports: "https://gaufre.informatique.univ-paris-diderot.fr/Shtrow/pissa-viau-plong-2019/issues"
+dev-repo: "git@gaufre.informatique.univ-paris-diderot.fr:Shtrow/pissa-viau-plong-2019.git"
+
+maintainer: [
+    "Benjamin Viau <benjamin_viau@yahoo.com>"
+]
+
+authors: [
+    "Benjamin Viau <benjamin_viau@yahoo.com>"
+]
+
+depends: [
+    "dune"    
+    "ftgl"
+    "ocaml"   {>= "4.08.1"}
+    "glfw-ocaml"
+    "glMLite"
+]
+
+
