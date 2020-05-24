@@ -4,6 +4,9 @@ open Engine.Core
 let scene_completed scene =
   Actors.player#get_position () = Terrain.exit
 
+let failed scene =
+  Actors.player#is_dead
+
 let essential_entity =
   [
     Actors.muzzle ;

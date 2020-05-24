@@ -16,7 +16,6 @@ let map_from_ast =
     fun i l -> 
     List.mapi (
       fun j tile ->
-      (*Printf.printf "%i  %i \n" i j;*)
         match tile with
         |Wall -> {
             actor = None;
@@ -88,6 +87,7 @@ let map =
 
 let get_cell (i,j) = map.(i).(j)
 
+(** Return true if the position (i,j) is out of boun *)
 let out_of_bound (i,j) = 
   (i) >= Array.length map 
   ||(i)< 0 
@@ -108,11 +108,6 @@ let move_entity e ((i,j) as v) =
     e#set_position v
     end
 
-let is_cell_blocked_2 ((i,j) as v) =
-  out_of_bound v || 
-  match map.(i).(j).ground with
-  | Wall  -> true
-  |_  -> false
 
 let is_cell_blocked ((i,j) as v) =
   out_of_bound v || 
@@ -120,12 +115,19 @@ let is_cell_blocked ((i,j) as v) =
   | Wall | Glass -> true
   |_  -> false
 
-(* This function return the entity faced from i,j position *)
+  (** Same as is_cell_blocked but no concider glass as blockable *)
+let is_cell_blocked_2 ((i,j) as v) =
+  out_of_bound v || 
+  match map.(i).(j).ground with
+  | Wall  -> true
+  |_  -> false
+
 
 let front_of pos dir =
   let dir = dir_to_vec dir in 
   Math.Vector2.vecI ((Math.Vector2.(+) (dir) (Math.Vector2.vecF pos)))
 
+  (** Return the actor face to (i,j) in the direction 'direction' *)
 let rec ray_cast ((i,j) as v) direction = 
   let v_f = Math.Vector2.vecF v in 
   if is_cell_blocked_2 v then None 
@@ -134,6 +136,8 @@ let rec ray_cast ((i,j) as v) direction =
     |None -> ray_cast  (Math.Vector2.vecI (Math.Vector2.(+) (v_f)  direction)) direction
     | e -> e
   
+
+  (** Return the cell face to (i,j) in the direction 'direction' *)
 let ray_cast2 ((i,j) as v) direction = 
 let rec aux prev ((i,j) as v) d = 
   let v_f = Math.Vector2.vecF v in 
@@ -147,7 +151,7 @@ let rec aux prev ((i,j) as v) d =
 
 let exit = (1,0)
 
-(* Creating  *)
+(* Creating  first terrain *)
 let terrain1 =
 object(self)
   inherit entity "terrain1" ()

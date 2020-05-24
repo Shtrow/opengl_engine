@@ -36,9 +36,6 @@ class entity ?(parent) tag () =
         let p = Math.Vector2.(+)  (xnew,ynew) (0.0,0.0)
         (* Math.Vector2.(+) transform.position p_global_transform.position  *)
         in p
-        (* TODO : Find the correct formula *)
-
-        
          (* in  let (x,y) = Math.Vector2.(-) p  p_global_transform.position   in 
          
          let x =  x*. (cos ((Float.pi /. 180.) *. p_global_transform.angle))

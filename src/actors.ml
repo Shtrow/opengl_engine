@@ -76,9 +76,6 @@ object(self)
   val bullet_speed = 1500.0
   method shoot trans pos direction =
 
-    (* DEBUG *)
-
-
     let t = Vector2.vecF @@ (Terrain.ray_cast2 (pos) (direction) ). coord in 
     target <-t;
     dir <-( dir_to_vec direction); 
@@ -220,22 +217,6 @@ object(self)
           end else ()
         | _ -> ();
 
-          (*match Engine.Input.isMouseButton0Down(), state with*)
-          
-        (*| true,Aiming ->*)
-            (*(self#get_action "shoot") (self:>actor);*)
-            (*bullet_behavior#shoot (self:>entity)#get_transform ((self)#get_position()) ((self)#get_direction());*)
-        
-        (*| true, _ (*when ammo >0*) ->*)
-            (*self#set_state Aiming*)
-        (*| _,_ -> () ;*)
-      (* Aiming with the mouse*)
-      (*match Engine.Input.isMouseButton1Down(), state with*)
-        (*|true, Aiming ->*)
-          (*if ammo >0 then self#set_state IdleGun else self#set_state IdleKnife*)
-        (*|_,_ -> ();*)
-
-  
 end
 
 
@@ -243,6 +224,7 @@ end
 
 
 
+(** Component that update the entity position in the terrain *)
 class moveComponent actor = 
 object(self)
   inherit component (actor:>entity)
@@ -271,7 +253,6 @@ object(self)
       match actor#state with 
         Aiming -> 
           let mouse_angle = Engine.Input.getMousePosition () in
-         (* TODO : get the correct mouse angle*) 
           (Transform.lookAt (actor#get_world_transform) {
             d with
           position = mouse_angle;
@@ -284,6 +265,8 @@ object(self)
 
 end
 
+(** This component is attached to the player, and is used to control camera
+ * translate zoom *)
 let cameraControlComponent = 
 object(self)
   inherit component (player:>entity)
@@ -296,8 +279,9 @@ object(self)
   method update () = 
 
     (* Camera behavior *)
-    Engine.Render.Camera.zoom (!Engine.Input.scroll_offset);
-
+    match Engine.Input.keyIsDown GLFW.F1 with 
+    | true -> Camera.zoom (-0.01) 
+    | _ -> ();
     if Engine.Input.isMouseButton0Down () then 
       begin
       if not hold_mouse_button then 

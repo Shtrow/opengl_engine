@@ -50,7 +50,7 @@ object
   method drawCurrentFrame : spriteCoord -> unit
 end
 
-(* Package of animation. Choose which one will be displayed with set_animation *)
+(* Collection of animation. Choose which one will be displayed with set_animation *)
 class animRenderer :  (string* animation) list ->
 object
   val animations : (string * animation) list
@@ -63,6 +63,10 @@ object
 
 end
 
+(** Create a window and initialize OpenGL and GLFW *)
 val init_graphic : unit -> window
+
+(** Call that function to draw a frame on window *)
 val update_graphic : window ->unit
-val clear : unit -> unit
+
+(** Erase the window content *) val clear : unit -> unit

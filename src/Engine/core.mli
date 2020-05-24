@@ -5,6 +5,8 @@ val dt : unit -> float
 (* Only needed in game loop *)
 val update_dt : float -> unit
 
+(** An entity is a fundamental piece of a game.
+ * It contains a list of component and his "transform"*)
 class entity  : ?parent:entity -> string ->
          unit ->
   object
@@ -22,11 +24,13 @@ class entity  : ?parent:entity -> string ->
     method get_transform : Math.Transform.transform
     method set_transform : Math.Transform.transform -> unit
   end
+  (**  Component contains a pointer to his associated entity and
+   * functions update and init which will bring a certain behaviour to the entity*)
 and virtual component  : entity ->
   object
     val mutable _entity : entity
     method get_entity : entity
-    (* Called onece a the beginning *)
+    (* Called once a the beginning of the game*)
     method init : unit -> unit
     (* Called each frame *)
     method update : unit ->unit
@@ -42,6 +46,10 @@ val dir_to_angle : direction -> float
 val back : direction -> direction
 
 type player_state = IdleKnife | KnifeAttack | IdleGun | Aiming
+
+(** An actor is an entity that has actions and can perform
+ * these actions inside the method take_action.
+ * An action has also his position in the grid level *)
 class virtual actor : ?parent:entity -> string -> int -> (string* (actor -> unit)) list ->
   object
     inherit entity
@@ -69,7 +77,7 @@ class virtual actor : ?parent:entity -> string -> int -> (string* (actor -> unit
   end
 
 (* Instance of this component directly draw the animation at the transform associated.
-This is not enough for multiple texture object (like terrain). Use Render.animRenderer instead
+This is not enough for multiple texture object. Use Render.animRenderer instead
   *)
 class virtual renderComponent : entity -> Render.animRenderer Lazy.t ->
 object 
@@ -86,6 +94,7 @@ class collision_box :  rectangle ->
     val box : rectangle
   end
 
+  (** Basically an entity collection that will call every update method *) 
 class scene : entity list -> actor list ->
   object
     val mutable entities : entity list

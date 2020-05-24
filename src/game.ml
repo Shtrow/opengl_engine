@@ -33,10 +33,6 @@ ResourceManager.load_texture_from_file "muzzle3" "res/fx/muzzle3.png";;
 ResourceManager.load_texture_from_file "muzzle4" "res/fx/muzzle4.png";;
 ResourceManager.load_texture_from_file "map1" "res/ocaml_game_lvl1.png";;
 
-(*ResourceManager.load_texture_from_file "plant1_1" "res/fx/plant1_1.png";;*)
-(*ResourceManager.load_texture_from_file "plant1_2" "res/fx/plant1_2.png";;*)
-(*ResourceManager.load_texture_from_file "plant1_3" "res/fx/plant1_3.png";;*)
-(*ResourceManager.load_texture_from_file "plant1_4" "res/fx/plant1_4.png";;*)
 ResourceManager.load_texture_from_file "player_idle" "res/player.png";;
 ResourceManager.load_texture_from_file "player_idle_knife" "res/chara/player_knife.png";;
 ResourceManager.load_texture_from_file "player_knife_attack1" "res/chara/player_knife_attack1.png";;
@@ -53,6 +49,7 @@ let current_lvl = Lazy.force lvl1;;
 
 scene_ref := Some (current_lvl);;
 
+(** gameloop, we need "last_time" to compute the delta time between two frame*)
 let rec gameLoop  (last_time: float)  : unit= 
   if  (windowShouldClose (window) )then () else
   let t = Unix.gettimeofday() in
@@ -69,6 +66,9 @@ let rec gameLoop  (last_time: float)  : unit=
     print_endline "LEVEL CLEAR";
     end
   else 
+    if Level.failed current_lvl then 
+      print_endline "YOU FAILED"
+    else 
   gameLoop t
 
 ;;
