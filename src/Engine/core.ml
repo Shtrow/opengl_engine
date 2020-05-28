@@ -86,18 +86,20 @@ let back d =
     Vector2.mul_scalar (-1.0) v  |> vec_to_dir in inv
 
 type player_state = IdleKnife | KnifeAttack | IdleGun | Aiming
-class virtual actor ?parent tag (cd : int) (actions) = 
+class virtual actor ?parent tag (cd : int) (actions) (pos: (int * int)) (dir:direction)= 
   object(self)
     inherit entity ?parent:parent tag ()
     val mutable state = IdleKnife
     method state  = state
     method set_state s = state <- s
-    val mutable direction = South
+    val init_direction = dir
+    val mutable direction =  dir
+    val init_position = pos
+    val mutable position = pos
     val mutable cooldown = cd
     val mutable current_cd = cd
     val mutable is_dead : bool = false
     val mutable is_ready  = false
-    val mutable position = (3,3)
     val my_actions : (string* (actor -> unit)) list = actions
     method is_dead = is_dead
     method kill b = is_dead <- b
@@ -111,6 +113,10 @@ class virtual actor ?parent tag (cd : int) (actions) =
     method get_position  () = position
     method get_direction () = direction
     method set_direction d = direction<-d
+    method reset () = 
+      direction <- init_direction;
+      (self:>entity)#activate();
+      is_dead <- false
 
   end
 
@@ -126,12 +132,11 @@ class scene (entities : entity list) actors  =
     val mutable entities  = entities
     val mutable actors  = actors
     method get_actors : actor list = actors
-    (** TODO : optimiser gameUpdate *)
+    method reset () = List.iter (fun e -> e#reset()) (actors)
     method next_turn () = 
       List.iter (fun act ->
         act#decrement_cd ()
       ) actors;
-      (* Printf.printf "Next turn" *)
 
     method sceneUpdate ()= 
       List.iter (fun act -> 

@@ -21,14 +21,14 @@ lazy (
 
   Actors.player#set_direction North;
   Actors.player#set_position (5,18);
-  let enemy1 = Actors.add_ennemy (new Actors.enemy1 "e1") (1,12) East in
-  let enemy2 = Actors.add_ennemy (new Actors.enemy0 "e2") (11,5) North in
-  let enemy3 = Actors.add_ennemy (new Actors.enemy0 "e3") (1,10) North in
-  let enemy4 = Actors.add_ennemy (new Actors.enemy0 "e4") (3,10) North in
-  let enemy5 = Actors.add_ennemy (new Actors.enemy0 "e5") (1,8) North in
-  let enemy6 = Actors.add_ennemy (new Actors.enemy0 "e6") (10,4) North in
-  let enemy7 = Actors.add_ennemy (new Actors.enemy0 "e7") (11,4) North in
-  let enemy8 = Actors.add_ennemy (new Actors.enemy1 "e8") (8,6) East in
+  let enemy1 = Actors.add_ennemy @@(new Actors.enemy1 "e1") (2,12) East in
+  let enemy2 = Actors.add_ennemy @@(new Actors.enemy0 "e2") (11,5) North in
+  let enemy3 = Actors.add_ennemy @@(new Actors.enemy0 "e3") (1,10) North in
+  let enemy4 = Actors.add_ennemy @@(new Actors.enemy0 "e4") (3,10) North in
+  let enemy5 = Actors.add_ennemy @@(new Actors.enemy0 "e5") (1,8) North in
+  let enemy6 = Actors.add_ennemy @@(new Actors.enemy0 "e6") (10,4) North in
+  let enemy7 = Actors.add_ennemy @@(new Actors.enemy0 "e7") (11,4) North in
+  let enemy8 = Actors.add_ennemy @@(new Actors.enemy1 "e8") (8,6) East in
   let gun = Prop.gun (8,9) in 
   new scene ([
   (* Add your entities here *)
@@ -59,7 +59,7 @@ let levels = let q = Queue.create () in
 Queue.add  lvl1 q;
 q
 
-let reset () =print_endline "RESET"; Queue.transfer levels levels
+let reset () =print_endline "RESET"
 
 let next () = 
   print_endline "NEXT LEVEL";

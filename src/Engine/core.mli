@@ -51,6 +51,7 @@ type player_state = IdleKnife | KnifeAttack | IdleGun | Aiming
  * these actions inside the method take_action.
  * An action has also his position in the grid level *)
 class virtual actor : ?parent:entity -> string -> int -> (string* (actor -> unit)) list ->
+  (int *int) -> direction -> 
   object
     inherit entity
     val mutable cooldown : int
@@ -74,6 +75,7 @@ class virtual actor : ?parent:entity -> string -> int -> (string* (actor -> unit
     method get_position : unit -> (int*int)
     method get_direction : unit -> direction
     method set_direction : direction -> unit
+    method reset : unit -> unit
   end
 
 (* Instance of this component directly draw the animation at the transform associated.
@@ -100,6 +102,7 @@ class scene : entity list -> actor list ->
     val mutable entities : entity list
     method sceneUpdate : unit -> unit
     method get_actors : actor list 
+    method reset : unit -> unit
     method next_turn : unit -> unit
   end
 

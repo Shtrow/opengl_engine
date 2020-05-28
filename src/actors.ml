@@ -157,7 +157,7 @@ let backstab actor =
     (e)#kill true
 
 
-let player = 
+let player pos dir = 
 object(self)
   inherit actor ~parent:(Terrain.terrain1) "player" 0 [
     ("move",move);
@@ -167,9 +167,12 @@ object(self)
     ("north",faceNorth);   
     ("shoot",shoot);   
     ("backstab",backstab);   
-    ]          
+    ] pos dir as super
   val mutable ammo = 0
   method nb_ammo = ammo
+  method reset () = 
+    super#reset() ; ammo <- 0;
+    Terrain.move_entity (self:>actor) (pos);
   method take_action () = 
       match Engine.Input.getKeyPressed () with 
         |Some( GLFW.Right) -> (self#get_action "east") (self:>actor)
@@ -181,6 +184,7 @@ object(self)
               match Terrain.get_actor (Terrain.front_of (self#get_position()) (self#get_direction())) Terrain.map with
               | Some a when (String.equal) (a:>entity)#get_tag  "gun" ->
                  self#set_state IdleGun;
+                 Printf.printf "Gun picked\n";
                 ammo <- (ammo+12);
                 (a:>entity)#deactivate()
               | Some a when (String.equal) (a:>entity)#get_tag  "exit" ->
@@ -200,7 +204,7 @@ object(self)
         (* is_ready <- false; *)
         (Option.get !scene_ref)#next_turn ()
         |Some (GLFW.R) -> 
-            ()
+          (Option.get !scene_ref)#reset()
         |Some (GLFW.W) -> 
           (Option.get !scene_ref)#next_turn ()
         |Some (GLFW.S) -> if self#nb_ammo > 0 then 
@@ -219,7 +223,7 @@ object(self)
 
 end
 
-
+let player = player (5,18) North
 
 
 
@@ -336,7 +340,7 @@ end
 
   
 (* Enemies *)
-class enemy0 tag = 
+class enemy0 tag pos dir= 
 object(self)
   inherit actor ~parent:(Terrain.terrain1) tag 1 [
     ("move",move);
@@ -345,7 +349,10 @@ object(self)
     ("south",faceSouth);
     ("north",faceNorth); 
     ("shoot",shoot); 
-  ]
+  ] pos dir as super
+  method reset () = 
+    super#reset() ;
+    Terrain.move_entity (self:>actor) (pos);
   method is_ready () =
     is_ready
   method take_action () =
@@ -363,9 +370,9 @@ object(self)
 end;;
 
 
-class enemy1 tag = 
+class enemy1 tag pos dir = 
 object(self)
-  inherit enemy0 tag as super
+  inherit enemy0 tag pos dir as super
   method is_ready () =
     is_ready
   method take_action () =
@@ -399,13 +406,14 @@ object(self)
   method update () = 
     if actor#is_dead then begin(render())#set_animation "dead";
     let t = (actor:>entity)#get_transform in 
-    (actor:>entity)#set_transform {t with  depth = 0.001; angle = (player:>actor)#get_transform.angle }
+    (actor:>entity)#set_transform 
+      {t with  depth = 0.001; angle = (player:>actor)#get_transform.angle }
     end
+    else 
+    (render())#set_animation "enemy";
 end
 
-let add_ennemy enemy position direction =
-  enemy#set_direction direction;
-  enemy#set_position position;
+let add_ennemy enemy =
   let render = new enemyRender enemy in 
   let c2 = new moveComponent enemy in 
   let c1 = new dead_behavior render#get_render_anim enemy enemy in 

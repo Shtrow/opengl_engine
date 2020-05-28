@@ -64,11 +64,14 @@ let rec gameLoop  (last_time: float)  : unit=
     begin
     Level.next();
     print_endline "LEVEL CLEAR";
+    exit 0
     end
   else 
     if Level.failed current_lvl then 
+      begin
+      current_lvl#reset();
       print_endline "YOU FAILED"
-    else 
+      end;
   gameLoop t
 
 ;;
