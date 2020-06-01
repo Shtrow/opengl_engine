@@ -8,9 +8,18 @@ open Math
 (* Creating animation *)
 let player_anims = lazy (let d = new animation [ResourceManager.get_texture "player_idle"] true in
  let k = new animation [ResourceManager.get_texture "player_idle_knife"] false in
- let k2 = new animation [ResourceManager.get_texture "player_knife_attack1";ResourceManager.get_texture "player_knife_attack2";ResourceManager.get_texture "player_knife_attack3";ResourceManager.get_texture "player_knife_attack4";] false in
+ let k2 = new animation [
+    ResourceManager.get_texture "player_knife_attack1";
+    ResourceManager.get_texture "player_knife_attack2";
+    ResourceManager.get_texture "player_knife_attack3";
+    ResourceManager.get_texture "player_knife_attack4";
+  ] false in
  k2#set_speed 0.1;
- (new animRenderer ["player_idle",d;"player_idle_knife",k;"player_knife_attack",k2]))
+ (new animRenderer [
+   "player_idle",d;
+   "player_idle_knife",k;
+   "player_knife_attack",k2
+ ]))
 
 let blood_splash_anim = 
   lazy (
@@ -127,7 +136,8 @@ object(self)
   method change_focus (actor:actor) = 
     let d = self#get_entity#get_transform in 
       self#get_entity#set_transform {d with depth = 0.1;
-        position = Vector2.mul_scalar 32.0 (Vector2.vecF @@ Terrain.front_of (actor#get_position()) (actor#get_direction())) ;
+        position = Vector2.mul_scalar 32.0 
+          (Vector2.vecF @@ Terrain.front_of (actor#get_position()) (actor#get_direction())) ;
         angle = actor#get_transform.angle
       }
 end;;
@@ -138,9 +148,12 @@ let shoot actor =
   muzzle_behavior#change_focus actor;
   let a = a#get_current_anim in
   a#rewind();
-  bullet_behavior#shoot (actor:>entity)#get_transform ((actor)#get_position()) ((actor)#get_direction());
+  bullet_behavior#shoot (actor:>entity)#get_transform 
+    ((actor)#get_position()) ((actor)#get_direction());
 
-  match Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))( dir_to_vec (actor#get_direction())) with 
+  match 
+    Terrain.ray_cast (Terrain.front_of (actor#get_position ()) (actor#get_direction()))
+      ( dir_to_vec (actor#get_direction())) with 
     | None -> () 
     (* WIP : I deactivate the entity for the moment *)
     | Some ent -> print_endline "HIT" ;
@@ -201,7 +214,7 @@ object(self)
                  self#set_state IdleGun;
             end;
             (self#get_action "move") (self:>actor) ;
-        (* is_ready <- false; *)
+
         (Option.get !scene_ref)#next_turn ()
         |Some (GLFW.R) -> 
           (Option.get !scene_ref)#reset()
@@ -377,7 +390,9 @@ object(self)
     is_ready
   method take_action () =
     begin
-    match Terrain.is_cell_blocked @@ (Vector2.(+) (Vector2.vecF position ) (dir_to_vec (self#get_direction()) ) |> Vector2.vecI) with
+    match Terrain.is_cell_blocked @@ 
+      (Vector2.(+) (Vector2.vecF position ) (dir_to_vec (self#get_direction()) ) |> Vector2.vecI) 
+    with
     | false -> (self#get_action "move") (self:>actor) ;
     | _ -> self#set_direction (back (self#get_direction()))
     end;
@@ -421,18 +436,12 @@ let add_ennemy enemy =
   (enemy:>entity)#add_component (c2 :>component);
   (enemy:>entity)#add_component (c1 :>component);
   enemy
-
 ;;
-
-
-
 
 (player:>entity)#add_component (playerRender:>component);;
 (player:>entity)#add_component (player_anim_script playerRender#get_render_anim:>component);;
 (player:>entity)#add_component (new moveComponent (player:>actor) :>component);;
 (player:>entity)#add_component (cameraControlComponent:>component);;
-
-(* (muzzle_pivot:>entity)#add_component (muzzle_pivot_behavior:>component);; *)
 
 (muzzle:>entity)#add_component (muzzleRender:>component);;
 (muzzle:>entity)#add_component (muzzle_behavior:>component);;

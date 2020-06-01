@@ -57,14 +57,14 @@ let anim_map1 =
 let animTerrain ground = 
   let anim =
   match ground with  
-    | Grass -> new animation [ResourceManager.get_texture "t_grass1"; ResourceManager.get_texture "t_grass2"] true
+    | Grass -> new animation [ResourceManager.get_texture "t_grass1";
+                              ResourceManager.get_texture "t_grass2"] true
     | Wall -> new animation [ResourceManager.get_texture "wall1"] false 
     | _ -> new animation [ResourceManager.get_texture "wall1"] false 
     in
       anim#set_speed 1.0;
       new animRenderer  [ "cell",anim]
 
-(* TODO : More complete function create *)
 let create_terrain w h =
     let terrain = Array.init h (fun i ->
       Array.init w (fun j -> 
@@ -80,7 +80,6 @@ let create_terrain w h =
     terrain
 
 let map = 
-  (*create_terrain 20 20*)
   let map = 
   map_from_ast @@ Level_parser.parse "./map1" |> to_array 
   in map
@@ -179,7 +178,11 @@ object(self)
     let transform = {transform with depth = -0.001} in 
     Array.iteri ( fun i c ->
     Array.iteri (fun j c1 ->
-        let transform = {transform with position = Math.Vector2.(+) transform.position (float i *.32.0, float j *. 32.0); depth = -0.01} in 
+        let transform = {
+          transform with position =
+            Math.Vector2.(+) transform.position (float i *.32.0, float j *. 32.0);
+          depth = -0.01
+        } in 
         match c1.anim with
         | Some a -> a#draw (to_sprite_coord transform)
         | None -> ()
@@ -196,4 +199,3 @@ let map1Render =
   end
 ;;
 (terrain1:>entity)#add_component (map1Render:>component);;
-(*(terrain1:>entity)#add_component (terrainRender:>component);;*)

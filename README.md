@@ -24,6 +24,7 @@ to run
 * `Space` to move
 * `W` to wait
 * `S` to shoot
+* `R` to retry level
 
 # Known issues
 

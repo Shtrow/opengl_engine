@@ -56,20 +56,18 @@ let glfw_instanciate_window ~height ~width ~title =
   let window = GLFW.createWindow ~width:width ~height:height ~title:title () in 
   makeContextCurrent ~window:(Some window) ;
 
-  let frame_buffer_size_callback = fun window width height -> glViewport ~x:0 ~y:0 ~width:width ~height:height in 
-  setFramebufferSizeCallback ~window:window ~f:(Option.Some(frame_buffer_size_callback)) |> ignore ; 
+  let frame_buffer_size_callback =
+    fun window width height -> glViewport ~x:0 ~y:0 ~width:width ~height:height in 
+  setFramebufferSizeCallback ~window:window 
+    ~f:(Option.Some(frame_buffer_size_callback)) |> ignore; 
 
-  glViewport ~x:0 ~y:0 ~height:height ~width:width ; 
+  glViewport ~x:0 ~y:0 ~height:height ~width:width; 
   window
 end
 
 
 module ResourceManager = 
 struct
-  (* let texturesBuffer = ref []
-  let addTexture t = texturesBuffer := t::!texturesBuffer *)
-
-
   let generate_texture ((data : image_data), width, height, internal_format ,pixel_data_format) =
     let tex = 
     {
@@ -91,7 +89,8 @@ struct
     glTexParameter GL_TEXTURE_2D (TexParam.GL_TEXTURE_MAG_FILTER tex.filter_Max);
 
     (* Loading texture in GPU buffer*)
-    glTexImage2D GL_TEXTURE_2D 0 tex.internal_format width height tex.pixel_data_format GL_UNSIGNED_BYTE data;
+    glTexImage2D GL_TEXTURE_2D 0 tex.internal_format width height 
+      tex.pixel_data_format GL_UNSIGNED_BYTE data;
 
     (* Unbind texture *)
     glUnbindTexture2D ();
@@ -132,7 +131,7 @@ module Shader  =
 struct
   let vertexShaderSource = 
   "#version 330 core
-  layout (location = 0) in vec4 vertex; // <vec2 position, vec2 texCoords>
+  layout (location = 0) in vec4 vertex;
 
   out vec2 TexCoords;
 
@@ -154,8 +153,7 @@ struct
 
   void main()
   {    
-      color = spriteColor * texture(image, TexCoords); // multiply by ec4(spriteColor, 1.0) to add color 
-      //color = vec4(color.xyz,0.5);
+      color = spriteColor * texture(image, TexCoords);
   }";;
   let shaderP = ref None
   let getShaderProg () = Option.get (!shaderP)
@@ -163,13 +161,16 @@ struct
     let vertexShader = glCreateShader ~shader_type:GL_VERTEX_SHADER in
     glShaderSource ~shader:vertexShader vertexShaderSource;
     glCompileShader ~shader:vertexShader;
-    if glGetShaderCompileStatus ~shader:vertexShader then () else print_endline "vertex shader compilation failed";
+    if glGetShaderCompileStatus ~shader:vertexShader then () 
+    else print_endline "vertex shader compilation failed";
+
     print_endline (glGetShaderInfoLog ~shader:vertexShader);
 
     let fragmentShader = glCreateShader ~shader_type:GL_FRAGMENT_SHADER in
     glShaderSource ~shader:fragmentShader fragmentShaderSource;
     glCompileShader ~shader:fragmentShader;
-    if glGetShaderCompileStatus ~shader:fragmentShader then () else print_endline "fragment shader compilation failed";
+    if glGetShaderCompileStatus ~shader:fragmentShader then ()
+      else print_endline "fragment shader compilation failed";
 
     (* shaderProgram, which is the linking of all shaders previously defined*)
     let shaderProgram = glCreateProgram() in
@@ -177,6 +178,7 @@ struct
     glAttachShader ~program:shaderProgram ~shader:fragmentShader;
     glLinkProgram ~program:shaderProgram;
     glUseProgram ~program:shaderProgram;
+
     (* deleting shaders, dont need anymore *)
     glDeleteShader~shader:vertexShader;
     glDeleteShader~shader:fragmentShader;
@@ -202,19 +204,17 @@ end
 
 module SpriteRenderer =
 struct
-  
-
   let vao = ref 0
   let initRenderData () = 
     let verticies = Bigarray.Array1.of_array Bigarray.float32 Bigarray.c_layout [|
       (* position *)    (* texture coords *)
       0.0; 1.0;      0.0; 1.0;
-      1.0; 0.0;     1.0;0.0;
-      0.0; 0.0;    0.0;0.0;
+      1.0; 0.0;      1.0; 0.0;
+      0.0; 0.0;      0.0; 0.0;
 
       0.0; 1.0;      0.0; 1.0;
-      1.0; 1.0;     1.0;1.0;
-      1.0; 0.0;    1.0;0.0;
+      1.0; 1.0;      1.0; 1.0;
+      1.0; 0.0;      1.0; 0.0;
     |] in 
     let vbo = glGenBuffer () in
     vao := (glGenVertexArray());
@@ -234,7 +234,6 @@ struct
     glUnbindBuffer GL_ARRAY_BUFFER
 
   let drawSprite ~texture2D ~position:((x,y,z) ) ~size:((s_x,s_y)) ~angle ~color =
-    (* TODO : Wrap shader *)
     Shader.use ();
 
     let tmp = (Ogl_matrix.get_identity()) in
@@ -250,14 +249,13 @@ struct
 
     Ogl_matrix.matrix_translate (-0.5*. s_x, -0.5 *. s_y,0.0) tmp;
 
-    let model = Ogl_matrix.mult_matrix tmp (Ogl_matrix.scale_matrix (s_x,s_y,1.0))  in (* Maybe the wrong order*)
+    let model = Ogl_matrix.mult_matrix tmp (Ogl_matrix.scale_matrix (s_x,s_y,1.0))  in
     
     (* checkError(); *)
     Shader.setMatrix4 "model" model;
     Shader.setVector4 "spriteColor" color;
 
     glActiveTexture(GL_TEXTURE0);
-    (* glActiveTexture(GL_TEXTURE2); *)
     ResourceManager.bind_texture texture2D;
 
     glBindVertexArray !vao;
@@ -330,7 +328,6 @@ object(self)
   method set_animation name = currentAnimation <- (List.assoc name) animations
   method get_animation name = (List.assoc name) animations
   method draw spriteCoord = 
-  (* print_float (dt()); *) 
     (currentAnimation)#drawCurrentFrame spriteCoord
   initializer begin let _,a = List.hd animations in currentAnimation <- a 
 end

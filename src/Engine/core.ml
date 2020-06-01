@@ -26,7 +26,8 @@ class entity ?(parent) tag () =
        {transform with  angle = transform.angle +. p_global_transform.angle;
       scale = Vector2.mul transform.scale  p_global_transform.scale; 
       position =
-        let s,c = sin @@ Math.Vector2.degree_to_rad (p_global_transform.angle ), cos @@ Math.Vector2.degree_to_rad (p_global_transform.angle ) in 
+        let s,c = sin @@ Math.Vector2.degree_to_rad (p_global_transform.angle ), 
+          cos @@ Math.Vector2.degree_to_rad (p_global_transform.angle ) in 
 
         let px,py = Math.Vector2.(+) transform.position p_global_transform.position in 
         let ox,oy = Math.Vector2.(+) p_local_transform.pivot p_global_transform.position in
@@ -34,14 +35,12 @@ class entity ?(parent) tag () =
          c *. (px-.ox) -. s *.(py-.oy) +. ox,
          s *. (px-.ox) +. c *.(py-.oy) +. oy in
         let p = Math.Vector2.(+)  (xnew,ynew) (0.0,0.0)
-        (* Math.Vector2.(+) transform.position p_global_transform.position  *)
         in p
          (* in  let (x,y) = Math.Vector2.(-) p  p_global_transform.position   in 
          
          let x =  x*. (cos ((Float.pi /. 180.) *. p_global_transform.angle))
          and y = y*. (sin ((Float.pi /. 180.) *. p_global_transform.angle))
          in (x,y) *)
-          
       }
       | None -> 
       transform
@@ -140,11 +139,14 @@ class scene (entities : entity list) actors  =
 
     method sceneUpdate ()= 
       List.iter (fun act -> 
-        if (not (act#is_dead)) &&act#is_ready () && (act:>entity)#is_activated then act#take_action() ; act#reset_cd()
+        if (not (act#is_dead)) &&act#is_ready () && (act:>entity)#is_activated then
+          act#take_action() ; act#reset_cd()
       )actors;
     Render.clear ();
-    List.iter ( fun e -> if e#is_activated then  iter_on_component_update (e#get_components ) ) entities 
-    initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities ; self#next_turn()
+    List.iter ( fun e -> if e#is_activated then  iter_on_component_update (e#get_components ) )
+      entities 
+    initializer (List.iter ( fun e -> iter_on_component_init (e#get_components)) entities;
+      self#next_turn()
 )
   end
 

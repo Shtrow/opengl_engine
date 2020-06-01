@@ -14,8 +14,6 @@ let essential_entity =
     Actors.blood_splash;
   ]
 
-(*let get_current_scene = function*)
-  (*| h::t -> *)
 let lvl1 = 
 lazy (
 
@@ -63,4 +61,3 @@ let reset () =print_endline "RESET"
 
 let next () = 
   print_endline "NEXT LEVEL";
-  (*TODO : Implement that*)
