@@ -1,4 +1,4 @@
-## Game by Benjamin Viau and Henrie Pissa
+## Game by Benjamin Viau
 
 # Compilation
 
